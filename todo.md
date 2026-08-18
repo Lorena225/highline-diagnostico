@@ -79,25 +79,26 @@
 - [x] Acionar manualmente a primeira publicação de produção na Vercel após a sincronização final do repositório.
 - [x] Configurar saída estática e função de API compatíveis com Vercel para servir o frontend e as rotas do diagnóstico.
 - [x] Configurar com segurança as variáveis de banco, SMTP e armazenamento no projeto Vercel antes de liberar os envios em produção.
-- [ ] Publicar a adaptação Vercel e confirmar uma implantação de produção pronta.
-- [ ] Confirmar que a raiz publicada retorna o frontend HTML e que a função de API responde na Vercel.
-- [ ] Corrigir a origem do link de comprovante para utilizar o domínio de produção estável da Vercel.
-- [ ] Validar um novo e-mail de confirmação e download de PDF no domínio publicado após a correção.
+- [x] Publicar a adaptação Vercel e confirmar uma implantação de produção pronta.
+- [x] Confirmar que a raiz publicada retorna o frontend HTML e que a função de API responde na Vercel.
+- [x] Corrigir a origem do link de comprovante para utilizar o domínio de produção estável da Vercel.
+- [x] Validar um novo e-mail de confirmação e download de PDF no domínio publicado após a correção.
 - [x] Configurar PUBLIC_APP_URL=https://diagnostico-virtruvia.vercel.app na Vercel para tornar a origem explícita no ambiente de produção.
 - [x] Criar projeto Supabase e provisionar banco PostgreSQL para o diagnóstico.
 - [x] Migrar tabelas de submissões, materiais e comprovantes para o esquema Supabase.
 - [x] Configurar o armazenamento Supabase para materiais e comprovantes PDF.
 - [x] Adaptar a aplicação para persistir dados e arquivos no Supabase.
-- [ ] Conectar as credenciais Supabase e SMTP à Vercel e validar o domínio publicado.
+- [x] Conectar as credenciais Supabase e SMTP à Vercel e validar o domínio publicado.
 - [x] Criar o projeto Supabase na organização gratuita, sem instância paga.
 - [x] Criar projeto Supabase gratuito na região de São Paulo (projeto `ywcupfxtzmhvfunchzmc`).
 - [x] Verificar as tabelas privadas, o bucket e as políticas aplicadas no projeto Supabase após a migração manual.
 - [x] Verificar explicitamente RLS e políticas do bucket `diagnostic-assets`, confirmando ausência de acesso público indevido.
-- [ ] Concluir sob gestão integral a obtenção de credenciais Supabase, configuração Vercel e validação publicada.
+- [x] Concluir a configuração Supabase, Vercel e a validação publicada, com atualização manual e segura da senha SMTP pela cliente.
 - [x] Validar a concessão de permissões `service_role` nas tabelas privadas do Supabase.
 - [x] Validar o bucket privado `diagnostic-assets` com upload, link assinado e limpeza controlada.
 - [x] Validar uma submissão real com respostas persistidas, comprovante no bucket Supabase e e-mail entregue.
 - [x] Adaptar a aplicação para persistir dados e arquivos no Supabase quando as credenciais de serviço estiverem configuradas.
 - [x] Verificar tabelas privadas `diagnostic_submissions` e `diagnostic_materials`, além do bucket privado `diagnostic-assets`, após a migração manual.
-- [ ] Sincronizar no GitHub as alterações locais de adaptação Supabase, testes e função de produção.
-- [ ] Implantar em produção a revisão sincronizada e confirmar que o domínio utiliza esse commit.
+- [x] Sincronizar no GitHub as alterações locais de adaptação Supabase, testes e função de produção.
+- [x] Implantar em produção a revisão sincronizada e confirmar que o domínio utiliza esse commit.
+- [x] Seguir o link seguro mais recente e confirmar o download final do comprovante PDF publicado.
