@@ -102,3 +102,4 @@
 - [x] Sincronizar no GitHub as alterações locais de adaptação Supabase, testes e função de produção.
 - [x] Implantar em produção a revisão sincronizada e confirmar que o domínio utiliza esse commit.
 - [x] Seguir o link seguro mais recente e confirmar o download final do comprovante PDF publicado.
+- [x] Substituir as marcas exibidas pela logo oficial da VirtruvIA e validar o cabeçalho, hero e rodapé em desktop e celular.

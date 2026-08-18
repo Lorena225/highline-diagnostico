@@ -17,7 +17,7 @@ const QUESTIONS_PER_PAGE = 1;
 
 const DRAFT_KEY = "highline-diagnostic-draft-v2";
 const asset = {
-  logo: "/manus-storage/logo-virtruvia_189e486f.png",
+  logo: "/manus-storage/logo-virtruvia-oficial_ea87e7b1.png",
   texture: "/manus-storage/hero-texture-logo_640382f7.webp",
   renaissance: "/manus-storage/hero-renaissance_a008c2cd.webp",
 };
