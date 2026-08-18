@@ -81,3 +81,6 @@
 - [ ] Configurar com segurança as variáveis de banco, SMTP e armazenamento no projeto Vercel antes de liberar os envios em produção.
 - [ ] Publicar a adaptação Vercel e confirmar uma implantação de produção pronta.
 - [ ] Confirmar que a raiz publicada retorna o frontend HTML e que a função de API responde na Vercel.
+- [ ] Corrigir a origem do link de comprovante para utilizar o domínio de produção estável da Vercel.
+- [ ] Validar um novo e-mail de confirmação e download de PDF no domínio publicado após a correção.
+- [ ] Configurar PUBLIC_APP_URL=https://diagnostico-virtruvia.vercel.app na Vercel para tornar a origem explícita no ambiente de produção.

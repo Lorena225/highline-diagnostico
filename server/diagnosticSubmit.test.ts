@@ -56,9 +56,9 @@ describe("diagnostic.submit", () => {
       receiptExpiresAt: expect.any(Date),
     }));
     expect(mocks.storeMaterial).toHaveBeenCalledWith(expect.stringContaining("comprovante-diagnostico.pdf"), expect.any(Buffer), "application/pdf");
-    expect(mocks.sendConfirmation).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77, receiptUrl: expect.stringContaining("/api/receipt/") }));
+    expect(mocks.sendConfirmation).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77, receiptUrl: expect.stringMatching(/^https:\/\/diagnostico-virtruvia\.vercel\.app\/api\/receipt\//) }));
     expect(mocks.updateEmailStatus).toHaveBeenCalledWith(77, "sent", null);
-    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringContaining("/api/receipt/") });
+    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringMatching(/^https:\/\/diagnostico-virtruvia\.vercel\.app\/api\/receipt\//) });
   });
 
   it("mantém o envio registrado como pendente quando o provedor está indisponível", async () => {

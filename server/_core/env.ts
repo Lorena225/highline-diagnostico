@@ -11,4 +11,5 @@ export const ENV = {
   smtpPort: Number(process.env.SMTP_PORT ?? "465"),
   smtpUser: process.env.SMTP_USER ?? "",
   smtpPassword: process.env.SMTP_PASSWORD ?? "",
+  publicAppUrl: process.env.PUBLIC_APP_URL ?? "https://diagnostico-virtruvia.vercel.app",
 };

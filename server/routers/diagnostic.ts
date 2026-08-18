@@ -5,6 +5,7 @@ import { sendDiagnosticEmail, sendRespondentConfirmationEmail } from "../diagnos
 import { createDiagnosticReceipt } from "../diagnosticReceipt";
 import { publicProcedure, router } from "../_core/trpc";
 import { storageGetSignedUrl, storagePut } from "../storage";
+import { ENV } from "../_core/env";
 
 const answerValue = z.union([z.string().max(12000), z.array(z.string().max(1000)).max(20), z.record(z.string(), z.string().max(4000)).refine(value => Object.keys(value).length <= 12)]);
 const materialCategory = z.enum(["digital", "commercial", "institutional"]);
@@ -111,11 +112,7 @@ export const diagnosticRouter = router({
         const receiptAccessToken = randomBytes(32).toString("hex");
         const receiptExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await updateDiagnosticReceipt(submission.id, { receiptStorageKey: receiptSaved.key, receiptAccessToken, receiptExpiresAt });
-        const request = ctx.req as { protocol?: string; headers?: Record<string, string | string[] | undefined>; get?: (name: string) => string | undefined } | undefined;
-        const host = request?.get?.("host") ?? request?.headers?.host;
-        const protocolHeader = request?.headers?.["x-forwarded-proto"];
-        const protocol = typeof protocolHeader === "string" ? protocolHeader.split(",")[0] : request?.protocol ?? "https";
-        const baseUrl = host ? `${protocol}://${host}` : "https://diagnostico-virtruvia.vercel.app";
+        const baseUrl = ENV.publicAppUrl.replace(/\/+$/, "");
         const receiptUrl = `${baseUrl}/api/receipt/${receiptAccessToken}`;
         const agencyEmail = await sendDiagnosticEmail({ submissionId: submission.id, respondent: input.respondent, answers: input.answers, materials: storedMaterials });
         const confirmation = agencyEmail.sent ? await sendRespondentConfirmationEmail({ submissionId: submission.id, respondent: input.respondent, receiptUrl }) : { sent: false, reason: agencyEmail.reason };
