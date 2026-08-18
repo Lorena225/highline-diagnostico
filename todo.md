@@ -18,3 +18,4 @@
 - [x] Cobrir persistência, formatação de e-mail e envio com testes automatizados.
 - [x] Validar a experiência desktop e móvel, além de verificar erros de compilação.
 - [x] Substituir a estrutura inicial pelo questionário final editado, incluindo os blocos, instruções e solicitações de materiais complementares.
+- [ ] Criar repositório privado no GitHub e enviar a versão final validada do projeto.
