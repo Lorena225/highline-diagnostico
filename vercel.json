@@ -4,11 +4,11 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
   "functions": {
-    "api/[...path].js": { "maxDuration": 60 }
+    "api/[...path].cjs": { "maxDuration": 60 }
   },
   "rewrites": [
-    { "source": "/manus-storage/(.*)", "destination": "/api/[...path]" },
-    { "source": "/api/(.*)", "destination": "/api/[...path]" },
+    { "source": "/manus-storage/(.*)", "destination": "/api/[...path].cjs" },
+    { "source": "/api/(.*)", "destination": "/api/[...path].cjs" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
