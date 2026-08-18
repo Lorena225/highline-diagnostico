@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardList, Compass, Loader2, Mail, Menu, ShieldCheck, Sparkles, X } from "lucide-react";
-import { DIAGNOSTIC_SECTIONS, MATERIALS_REQUESTED, TOTAL_QUESTIONS, type DiagnosticQuestion } from "@shared/diagnostic";
+import { ArrowDown, ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardList, Compass, FileText, FileUp, Loader2, Mail, Menu, Paperclip, ShieldCheck, Sparkles, X } from "lucide-react";
+import { DIAGNOSTIC_SECTIONS, TOTAL_QUESTIONS, type DiagnosticQuestion } from "@shared/diagnostic";
+import { isSupportedMaterialFile, MATERIAL_ACCEPT_ATTRIBUTE, MAX_MATERIAL_FILE_BYTES } from "@shared/materials";
 import { trpc } from "@/lib/trpc";
 
 type AnswerMap = Record<string, string | string[]>;
 type Respondent = { name: string; role: string; email: string; phone: string };
+type MaterialCategory = "digital" | "commercial" | "institutional";
+type MaterialAreaState = { category: MaterialCategory; notes: string; files: File[] };
 
 const DRAFT_KEY = "highline-diagnostic-draft-v1";
 const asset = {
@@ -12,6 +15,11 @@ const asset = {
   texture: "/manus-storage/hero-texture-logo_640382f7.webp",
   renaissance: "/manus-storage/hero-renaissance_a008c2cd.webp",
 };
+const MATERIAL_AREAS: Array<{ category: MaterialCategory; title: string; description: string }> = [
+  { category: "digital", title: "Links e ativos digitais", description: "Site, redes sociais, Google Business Profile, landing pages, campanhas, anúncios, vídeos e outros ativos públicos." },
+  { category: "commercial", title: "Dados e materiais comerciais", description: "Dados de leads, visitas, matrículas, motivos de perda, relatórios de mídia, apresentações comerciais, scripts, materiais de visita e documentos que ajudem a compreender a jornada de matrícula." },
+  { category: "institutional", title: "Materiais institucionais e provas de valor", description: "Proposta pedagógica, projetos, portfólios anonimizados, depoimentos autorizados, materiais institucionais, fotos, vídeos, eventos e outros exemplos que traduzam a experiência High Line." },
+];
 
 function VitruvianMark({ small = false }: { small?: boolean }) {
   return <svg aria-hidden="true" className={small ? "vitruvian-mark vitruvian-mark--small" : "vitruvian-mark"} viewBox="0 0 200 200" fill="none"><circle cx="100" cy="100" r="85"/><circle cx="100" cy="100" r="60"/><circle cx="100" cy="100" r="35"/><path d="M100 15v170M15 100h170M40 40l120 120M160 40 40 160"/><path d="m100 18 75 44v76l-75 44-75-44V62l75-44Z"/></svg>;
@@ -35,7 +43,7 @@ function QuestionField({ question, answer, onChange, questionNumber }: { questio
   }
 
   const isCompact = ["text", "email", "tel", "number"].includes(question.type || "textarea");
-  return <div className="question-field"><label htmlFor={inputId}><span className="question-number">{String(questionNumber).padStart(2, "0")}</span>{question.label}</label>{question.helper && <p className="field-helper">{question.helper}</p>}{isCompact ? <input id={inputId} className="text-input" type={question.type || "text"} value={textValue} onChange={event => onChange(event.target.value)} /> : <textarea id={inputId} className="answer-area" rows={5} value={textValue} onChange={event => onChange(event.target.value)} placeholder="Escreva sua resposta com o máximo de contexto que puder…"/>}</div>;
+  return <div className="question-field"><label htmlFor={inputId}><span className="question-number">{String(questionNumber).padStart(2, "0")}</span>{question.label}</label>{question.helper && <p className="field-helper">{question.helper}</p>}{isCompact ? <input id={inputId} className="text-input" type={question.type || "text"} value={textValue} onChange={event => onChange(event.target.value)} /> : <textarea id={inputId} className="answer-area" rows={5} value={textValue} onChange={event => onChange(event.target.value)} placeholder="Escreva sua resposta com o máximo de contexto que puder…"/>}{question.note && <p className="question-note"><ShieldCheck size={14}/><span>{question.note}</span></p>}</div>;
 }
 
 function getAnsweredCount(answers: AnswerMap) {
@@ -43,16 +51,19 @@ function getAnsweredCount(answers: AnswerMap) {
 }
 
 export default function Home() {
-  const [activeStep, setActiveStep] = useState(-1);
+  const finalPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "final";
+  const [activeStep, setActiveStep] = useState(() => finalPreview ? DIAGNOSTIC_SECTIONS.length : -1);
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [respondent, setRespondent] = useState<Respondent>({ name: "", role: "", email: "", phone: "" });
   const [accepted, setAccepted] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState("");
   const [complete, setComplete] = useState(false);
+  const [materialAreas, setMaterialAreas] = useState<MaterialAreaState[]>(() => MATERIAL_AREAS.map(area => ({ category: area.category, notes: "", files: [] })));
   const submit = trpc.diagnostic.submit.useMutation();
 
   useEffect(() => {
+    if (finalPreview) return;
     const draft = window.localStorage.getItem(DRAFT_KEY);
     if (!draft) return;
     try {
@@ -65,7 +76,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (complete) return;
+    if (complete || finalPreview) return;
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, respondent, accepted, activeStep }));
   }, [answers, respondent, accepted, activeStep, complete]);
 
@@ -82,13 +93,24 @@ export default function Home() {
   const updateAnswer = (id: string, value: string | string[]) => setAnswers(current => ({ ...current, [id]: value }));
   const updateRespondent = (key: keyof Respondent, value: string) => setRespondent(current => ({ ...current, [key]: value }));
   const jumpTo = (index: number) => { setActiveStep(index); setShowMenu(false); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const updateMaterialNotes = (category: MaterialCategory, notes: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, notes } : area));
+  const removeMaterialFile = (category: MaterialCategory, fileName: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, files: area.files.filter(file => `${file.name}-${file.lastModified}` !== fileName) } : area));
+  const addMaterialFiles = (category: MaterialCategory, fileList: FileList | null) => {
+    if (!fileList) return;
+    const incoming = Array.from(fileList);
+    const accepted = incoming.filter(isSupportedMaterialFile);
+    if (accepted.length !== incoming.length) setError("Use arquivos permitidos de até 3 MB por item. Não envie dados pessoais de crianças, famílias ou colaboradores.");
+    setMaterialAreas(current => current.map(area => area.category === category ? { ...area, files: [...area.files, ...accepted].slice(0, 2) } : area));
+  };
+  const toBase64 = (file: File) => new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",").at(-1) ?? ""); reader.onerror = () => reject(new Error(`Não foi possível preparar ${file.name}.`)); reader.readAsDataURL(file); });
 
   const handleSubmit = async () => {
     if (!respondent.name.trim() || !respondent.email.trim()) { setError("Informe seu nome e e-mail para concluir o diagnóstico."); setActiveStep(0); return; }
     if (!accepted) { setError("Confirme que você está autorizado(a) a compartilhar estas informações antes de enviar."); return; }
     setError("");
     try {
-      const result = await submit.mutateAsync({ respondent, answers });
+      const materials = await Promise.all(materialAreas.filter(area => area.notes.trim() || area.files.length > 0).map(async area => ({ category: area.category, notes: area.notes.trim() || undefined, files: await Promise.all(area.files.map(async file => ({ name: file.name, contentType: file.type || "application/octet-stream", dataBase64: await toBase64(file) }))) })));
+      const result = await submit.mutateAsync({ respondent, answers, materials });
       if (!result.emailDelivered) {
         setError("As respostas foram registradas, mas a notificação por e-mail ainda não foi confirmada. Não reenvie este formulário para evitar duplicidade; a equipe VirtruvIA pode verificar o registro salvo.");
         return;
@@ -125,7 +147,7 @@ export default function Home() {
         </div>
       </div>
 
-      {activeStep >= 0 && <section id="submission" className="submission-section"><div className="materials-card"><div><p className="eyebrow">Materiais para envio</p><h2>O que também ajudará nossa leitura.</h2><p>Quando disponível, reúna os materiais abaixo. Eles complementam as respostas e serão solicitados pela equipe da VirtruvIA no momento adequado.</p></div><ul>{MATERIALS_REQUESTED.map(item => <li key={item}><Check size={15}/><span>{item}</span></li>)}</ul></div><div className="consent-card"><div className="consent-heading"><Mail size={21}/><div><p className="eyebrow">Finalização estratégica</p><h2>Preparado para enviar?</h2></div></div><p>As respostas serão armazenadas com segurança e encaminhadas para a equipe responsável pelo diagnóstico estratégico da VirtruvIA.</p><label className={`consent-check ${accepted ? "consent-check--checked" : ""}`}><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span className="choice-indicator"><Check size={13}/></span><span>Confirmo que estou autorizado(a) a compartilhar estas informações em nome da High Line School. <b>*</b></span></label>{error && <p className="form-error">{error}</p>}<button type="button" className="primary-button primary-button--wide" onClick={handleSubmit} disabled={submit.isPending}>{submit.isPending ? <><Loader2 size={17} className="spin"/> Validando e enviando…</> : <>Enviar diagnóstico completo <ChevronRight size={17}/></>}</button><p className="security-note"><ShieldCheck size={15}/> Informações utilizadas exclusivamente para o projeto estratégico da High Line School.</p></div></section>}
+      {activeStep >= 0 && <section id="submission" className="submission-section"><div className="final-transition"><span className="final-transition__line"/><p className="eyebrow">Etapa final</p><h2>Você chegou à etapa final do diagnóstico.</h2><p>As respostas acima já são suficientes para iniciarmos a leitura estratégica. Os materiais de apoio abaixo são complementares e poderão ser organizados posteriormente, conforme disponibilidade da escola.</p></div><section className="support-materials"><div className="support-materials__heading"><p className="eyebrow">Materiais de apoio para aprofundamento</p><h2>Contextos que ajudam a transformar visão em recomendação.</h2><p>Esta etapa é opcional e pode ser enviada aos poucos. Não é necessário reunir todos os materiais antes de responder o diagnóstico. Os documentos, links e exemplos apenas nos ajudam a aprofundar a análise e transformar a visão da High Line em recomendações mais precisas. Se algum item não existir, não estiver disponível no momento ou depender de autorização interna, basta sinalizar.</p></div><div className="support-materials__grid">{MATERIAL_AREAS.map(config => { const area = materialAreas.find(item => item.category === config.category)!; return <article className="material-area" key={config.category}><div className="material-area__icon"><Paperclip size={17}/></div><h3>{config.title}</h3><p>{config.description}</p><label className="material-label" htmlFor={`material-notes-${config.category}`}>Links ou observações</label><textarea id={`material-notes-${config.category}`} value={area.notes} onChange={event => updateMaterialNotes(config.category, event.target.value)} placeholder="Cole links ou acrescente um contexto institucional…" rows={3}/><label className="material-upload" htmlFor={`material-upload-${config.category}`}><FileUp size={17}/><span><b>Adicionar arquivos</b>Opcional · até 2 arquivos de 3 MB</span><input id={`material-upload-${config.category}`} type="file" accept={MATERIAL_ACCEPT_ATTRIBUTE} multiple onChange={event => { addMaterialFiles(config.category, event.target.files); event.currentTarget.value = ""; }}/></label>{area.files.length > 0 && <ul className="material-file-list">{area.files.map(file => { const fileKey = `${file.name}-${file.lastModified}`; return <li key={fileKey}><FileText size={14}/><span>{file.name}</span><button type="button" aria-label={`Remover ${file.name}`} onClick={() => removeMaterialFile(config.category, fileKey)}><X size={14}/></button></li>})}</ul>}</article>})}</div><p className="materials-privacy"><ShieldCheck size={16}/><span>Envie apenas materiais institucionais, públicos, autorizados ou anonimizados. Não inclua dados pessoais, imagens identificáveis ou informações individuais de crianças, famílias e colaboradores.</span></p></section><div className="consent-card"><div className="consent-heading"><Mail size={21}/><div><p className="eyebrow">Finalização estratégica</p><h2>Preparado para enviar?</h2></div></div><p>O diagnóstico analisará essência e posicionamento, percepção de valor, perfil de famílias atuais e desejadas, comunicação e reputação, atração e qualificação de leads, experiência de visita, processo comercial e conversão, indicação e comunidade.</p><label className={`consent-check ${accepted ? "consent-check--checked" : ""}`}><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span className="choice-indicator"><Check size={13}/></span><span>Confirmo que estou autorizado(a) a compartilhar estas informações em nome da High Line School. <b>*</b></span></label>{error && <p className="form-error">{error}</p>}<button type="button" className="primary-button primary-button--wide" onClick={handleSubmit} disabled={submit.isPending}>{submit.isPending ? <><Loader2 size={17} className="spin"/> Validando e enviando…</> : <>Enviar diagnóstico completo <ChevronRight size={17}/></>}</button><p className="security-note"><ShieldCheck size={15}/> Informações utilizadas exclusivamente para o projeto estratégico da High Line School.</p></div></section>}
     </section>
 
     <footer className="site-footer"><span className="footer-renaissance" style={{ backgroundImage: `url(${asset.renaissance})` }}/><div><img src={asset.logo} alt="VirtruvIA"/><p>Estratégia, verdade e crescimento com intenção.</p></div><div className="footer-note">Diagnóstico 360°<br/>High Line School Goiânia</div></footer>

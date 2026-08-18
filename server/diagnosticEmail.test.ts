@@ -18,4 +18,23 @@ describe("formatDiagnosticEmail", () => {
     DIAGNOSTIC_SECTIONS.forEach(section => expect(message.html).toContain(section.title));
   });
 
+  it("inclui observações e links dos materiais complementares", () => {
+    const message = formatDiagnosticEmail({
+      submissionId: 43,
+      respondent: { name: "Ana Gestão", email: "ana@highline.edu.br" },
+      answers: {},
+      materials: [{
+        category: "institutional",
+        notes: "Portfólio institucional anonimizado.",
+        fileName: "portfolio.pdf",
+        fileUrl: "/manus-storage/diagnosticos/portfolio.pdf",
+      }],
+    });
+
+    expect(message.html).toContain("Materiais de apoio para aprofundamento");
+    expect(message.html).toContain("Portfólio institucional anonimizado.");
+    expect(message.html).toContain("portfolio.pdf");
+    expect(message.plainText).toContain("MATERIAIS DE APOIO PARA APROFUNDAMENTO");
+  });
+
 });

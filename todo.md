@@ -27,3 +27,12 @@
 - [x] Atualizar o título, a descrição e o texto introdutório com a nova narrativa estratégica fornecida.
 - [x] Inserir integralmente o Bloco 1 de contexto, estrutura e oferta educacional com todas as perguntas fornecidas.
 - [x] Atualizar a contagem, a navegação e o progresso do diagnóstico para refletir o novo bloco.
+- [x] Refinar o bloco de essência, origem e visão com a orientação institucional e as perguntas de branding solicitadas.
+- [x] Atualizar o bloco de público com o perfil comunitário orientado, sem identificação individual ou segmentação sensível.
+- [x] Ajustar o bloco de experiência entregue com perguntas e orientações de materiais institucionalizados ou anonimizados.
+- [x] Incluir a pergunta final de percepção de valor no bloco de concorrência e posicionamento.
+- [x] Criar uma única seção final de materiais de apoio opcionais, com três áreas de links e uploads seguros.
+- [x] Persistir metadados dos materiais enviados com vínculo ao diagnóstico e armazenamento seguro em S3.
+- [x] Exibir a transição final e o escopo estratégico da análise antes do encerramento.
+- [x] Validar visualmente a etapa final do formulário em desktop e mobile, incluindo transição, materiais e encerramento.
+- [x] Exercitar a seleção de arquivo permitido, a rejeição de formato inválido e o envio com materiais opcionais por meio da validação compartilhada e dos testes de submissão.

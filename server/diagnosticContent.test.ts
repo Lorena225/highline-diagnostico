@@ -32,4 +32,14 @@ describe("estrutura do diagnóstico", () => {
   it("mantém a contagem total derivada de todas as seções", () => {
     expect(TOTAL_QUESTIONS).toBe(DIAGNOSTIC_SECTIONS.reduce((total, section) => total + section.questions.length, 0));
   });
+
+  it("inclui as novas perguntas de branding, privacidade e percepção de valor", () => {
+    const essence = DIAGNOSTIC_SECTIONS.find(section => section.id === "origem-essencia");
+    const experience = DIAGNOSTIC_SECTIONS.find(section => section.id === "produto-experiencia");
+    const positioning = DIAGNOSTIC_SECTIONS.find(section => section.id === "concorrencia-posicionamento");
+
+    expect(essence?.questions.some(question => question.id === "branding_mal_interpretado")).toBe(true);
+    expect(experience?.questions.find(question => question.id === "provas_qualidade")?.note).toContain("autorização específica");
+    expect(positioning?.questions.some(question => question.id === "percepcao_valor_qualidade")).toBe(true);
+  });
 });

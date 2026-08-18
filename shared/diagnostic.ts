@@ -5,6 +5,7 @@ export type DiagnosticQuestion = {
   label: string;
   type?: QuestionType;
   helper?: string;
+  note?: string;
   options?: string[];
   required?: boolean;
 };
@@ -52,7 +53,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     id: "origem-essencia",
     title: "Origem, visão da fundadora e essência da marca",
     rationale:
-      "Famílias escolhem uma visão de educação, um ambiente de confiança e um futuro possível para seus filhos. Este bloco revela a origem, as convicções e os valores que devem orientar a experiência da marca.",
+      "Este bloco busca compreender a origem, as convicções e a visão que dão identidade à High Line. As respostas serão utilizadas para traduzir a essência real da escola em posicionamento, conteúdo, experiência de visita e comunicação com as famílias. Não se trata de uma avaliação da gestão pedagógica ou operacional.",
     questions: [
       text("historia_high_line", "Como nasceu a ideia da High Line School? Conte a história desde o início."),
       text("momento_decisao_escola", "Em que momento você decidiu criar, comprar, liderar ou transformar uma escola?"),
@@ -73,11 +74,12 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
       text("levar_para_vida", "O que vocês desejam que um aluno leve da High Line para a vida, além do aprendizado formal?"),
       text("verdade_nao_comunicada", "Qual é a maior verdade sobre a High Line que o marketing atual ainda não consegue comunicar?"),
       text("entrega_melhor_que_explicacao", "O que a escola entrega melhor do que consegue explicar para uma família que ainda não a conhece?"),
+      text("branding_mal_interpretado", "Existe alguma mensagem fundamental transmitida pelo branding atual que você sente que é mal interpretada pelos colaboradores e, principalmente, pelas famílias? Se sim, descreva qual é a mensagem, como ela costuma ser interpretada e qual seria a interpretação correta para a escola."),
       text("experiencia_emociona", "Qual parte da experiência High Line mais emociona ou orgulha você pessoalmente?"),
       text("frases_recomendacao", "Que frases você gostaria que pais e mães dissessem espontaneamente ao recomendar a escola?"),
       text("resposta_ideal_escolha", "Se uma família tivesse de explicar por que escolheu a High Line, qual deveria ser a resposta ideal?"),
       text("percepcao_equivocada", "Qual é a percepção equivocada mais comum sobre a escola?"),
-      text("mensagem_receio", "Existe alguma mensagem importante que vocês têm receio de comunicar, mas acreditam profundamente?"),
+      { id: "mensagem_receio", label: "Existe alguma mensagem importante que vocês têm receio de comunicar, mas acreditam profundamente?", type: "textarea", helper: "A intenção é identificar convicções de marca que possam ser explicadas com mais clareza, contexto e responsabilidade, e não criar campanhas controversas." },
       {
         id: "estilo_comunicacao",
         label: "Que estilo de comunicação representa a High Line? Marque todos que se aplicam.",
@@ -91,7 +93,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
       text("reconhecimento_missao", "Que reconhecimento faria você sentir que a missão da escola está sendo cumprida?"),
       text("legado", "Qual legado você gostaria de deixar por meio da High Line para alunos, famílias, equipe e cidade?"),
       text("referencia_nacional", "Se a High Line se tornasse referência nacional, por qual ideia ou experiência você gostaria que fosse conhecida?"),
-      text("risco_crescimento", "Qual é o maior risco de crescer e perder a essência da escola?"),
+      text("risco_crescimento", "Qual parte da essência da High Line você mais teme perder com o crescimento da escola?"),
       text("proteger_essencia", "O que precisa ser protegido para que o crescimento não transforme a High Line em mais uma escola?"),
     ],
   },
@@ -101,7 +103,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     rationale:
       "O desafio não é gerar mais leads a qualquer custo. É atrair e converter famílias compatíveis com a faixa de investimento, os valores e a proposta educacional da escola.",
     questions: [
-      text("familias_atuais", "Quem são as famílias que estudam hoje na High Line? Descreva idade dos pais, profissões, faixa de renda, estilo de vida, interesses e expectativas predominantes."),
+      { id: "familias_atuais", label: "Descreva o perfil predominante das famílias atendidas atualmente pela High Line.", type: "textarea", helper: "Campos orientadores opcionais: faixas de investimento percebidas (Faixa 1, Faixa 2 e Faixa 3); principais bairros, regiões, condomínios ou cidades de origem; perfis profissionais recorrentes; valores, expectativas e critérios de escolha; hábitos, eventos, fontes de informação e temas consumidos; valores culturais, familiares ou religiosos apenas se relevantes para compreender a comunidade e a comunicação; elogios, sugestões, reclamações e dúvidas recorrentes; temas de alinhamento entre escola e família.", note: "Não utilize identificação individual de famílias. O objetivo é compreender padrões de comunidade, comunicação e decisão de matrícula, não categorizar pessoas. Valores religiosos não devem ser usados como classificação ou segmentação." },
       text("geografia_familias", "Em quais bairros, condomínios, cidades ou regiões essas famílias moram?"),
       text("familia_permanece", "Qual é o perfil da família que mais valoriza e permanece na escola?"),
       text("razoes_escolha", "Quais são as razões mais comuns relatadas pelas famílias para escolher a High Line?"),
@@ -134,16 +136,17 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
       text("metodologia_rotina", "Como a metodologia funciona na rotina real das crianças, e não apenas no discurso institucional?"),
       text("padrao_high_line", "O que acontece em sala, nos projetos ou nos espaços da escola que mais representa o padrão High Line?"),
       text("adaptacao_acolhimento", "Como é o processo de adaptação e acolhimento de uma criança nova e de sua família?"),
-      text("acompanhamento_desenvolvimento", "Como a escola acompanha o desenvolvimento acadêmico, socioemocional, comportamental e de autonomia dos alunos?"),
-      text("devolutivas_pais", "Como os pais recebem devolutivas sobre o desenvolvimento dos filhos?"),
+      text("acompanhamento_desenvolvimento", "Como a escola afere e acompanha o desenvolvimento acadêmico, socioemocional, comportamental e de autonomia dos alunos?"),
+      text("modelo_devolutiva_institucional", "Existe algum modelo institucional de relatório, portfólio, apresentação ou roteiro de devolutiva utilizado na comunicação com as famílias? Se sim, descreva ou indique se há um modelo anonimizado que possa ser compartilhado posteriormente."),
+      text("devolutivas_pais", "Como as famílias recebem e compreendem as devolutivas sobre o desenvolvimento dos filhos? Quais dúvidas, expectativas, interpretações ou objeções aparecem com maior frequência?"),
       text("diferencial_professores", "O que professores fazem de diferente em relação a outras escolas?"),
       text("desenvolvimento_docente", "Como a escola seleciona, forma, acompanha e desenvolve o corpo docente?"),
-      text("proposta_componentes", "Como a proposta aparece em inglês, tecnologia, artes, leitura, esporte, cultura, natureza, projetos, avaliação e habilidades socioemocionais?"),
+      text("proposta_componentes", "Como o inglês está inserido na experiência educacional da High Line? Descreva em quais momentos, disciplinas, projetos, rotinas e interações ele aparece e como essa proposta se conecta ao desenvolvimento acadêmico, cultural e socioemocional dos alunos."),
       text("protocolos_cuidado", "Quais são os protocolos e diferenciais de segurança, cuidado, saúde, alimentação e comunicação com as famílias?"),
       text("momentos_documentar", "Quais momentos da rotina merecem ser filmados ou documentados porque traduzem a essência da escola?"),
       text("projetos_marcantes", "Quais projetos, eventos, rituais ou experiências são mais marcantes para crianças e famílias?"),
-      text("provas_qualidade", "Quais resultados concretos, portfólios, produções, indicadores ou trajetórias de alunos ajudam a provar a qualidade da escola?"),
-      text("historias_transformacao", "Quais depoimentos ou histórias de famílias melhor demonstram a transformação entregue pela High Line?"),
+      { id: "provas_qualidade", label: "Quais resultados concretos, portfólios, produções, indicadores institucionais ou trajetórias de alunos ativos e concluintes podem ser utilizados, de maneira ética e autorizada, para comunicar e demonstrar a qualidade da metodologia e do ensino da instituição?", type: "textarea", note: "Quando houver interesse em compartilhar materiais, utilize apenas exemplos institucionais ou anonimizados. A exposição de nome, imagem, voz, desempenho individual ou qualquer dado pessoal de crianças depende de autorização específica dos responsáveis." },
+      { id: "historias_transformacao", label: "Quais depoimentos ou histórias de famílias poderiam ser utilizados, mediante autorização, como prova social e demonstração da transformação que a High Line entrega na vida de seus alunos?", type: "textarea", note: "Quando houver interesse em compartilhar materiais, utilize apenas exemplos institucionais ou anonimizados. A exposição de nome, imagem, voz, desempenho individual ou qualquer dado pessoal de crianças depende de autorização específica dos responsáveis." },
       text("valor_subestimado", "Qual serviço, espaço, projeto ou prática é pouco valorizado hoje porque as famílias ainda não entendem toda a sua importância?"),
       text("percepcao_visita", "O que vocês gostariam que uma família percebesse durante uma visita, mas hoje muitas vezes passa despercebido?"),
     ],
@@ -166,6 +169,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
       text("lacuna_mercado", "Que lacuna de mercado os concorrentes não ocupam e que a High Line poderia dominar?"),
       text("marcas_admiradas", "Quais marcas, escolas ou empresas — de qualquer setor — vocês admiram pela experiência, atendimento e comunicação? O que especificamente admiram em cada uma?"),
       text("posicao_mente", "Em uma frase, qual deveria ser a posição da High Line na mente de uma família de alto padrão em Goiânia?"),
+      { id: "percepcao_valor_qualidade", label: "Em uma frase, sobre percepção de valor e posição em qualidade, o que vocês gostariam que viesse à mente de uma família goiana ao ouvir o nome ‘High Line School’?", type: "textarea", helper: "Pense na associação espontânea que a marca deve conquistar: não apenas no que a escola faz, mas no lugar que ela deve ocupar na mente das famílias." },
     ],
   },
   {
@@ -305,19 +309,6 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
       text("parceria_90_dias", "O que precisaria acontecer para você afirmar, ao final de 90 dias, que a parceria está no caminho certo?"),
     ],
   },
-];
-
-export const MATERIALS_REQUESTED = [
-  "Organograma e lista dos principais responsáveis por pedagógico, comercial, atendimento e marketing.",
-  "Número de alunos, vagas, ocupação e lista de espera por turma, série e turno.",
-  "Tabela de mensalidades, taxas, produtos, serviços e política comercial.",
-  "Relatórios de leads, visitas, propostas, matrículas e motivos de perda dos últimos 6 a 12 meses.",
-  "Origem de cada matrícula, relatórios da agência atual e investimento de mídia por canal e mês.",
-  "Acessos ou exportações de Meta Ads, Google Ads, Google Analytics, Tag Manager, CRM e WhatsApp Business, se aplicável.",
-  "Links de canais, criativos, copies, vídeos, fotos e campanhas utilizadas nos últimos 12 meses.",
-  "Apresentações pedagógicas, materiais de matrícula, kit de visita, contrato e comunicações de rematrícula.",
-  "Avaliações do Google, elogios, críticas, pesquisas de satisfação e lista de concorrentes prioritários.",
-  "Materiais que documentem metodologia, projetos, eventos, resultados e diferenciais pedagógicos.",
 ];
 
 export const TOTAL_QUESTIONS = DIAGNOSTIC_SECTIONS.reduce((total, section) => total + section.questions.length, 0);

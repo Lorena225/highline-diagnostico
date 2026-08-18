@@ -39,3 +39,19 @@ export const diagnosticSubmissions = mysqlTable("diagnosticSubmissions", {
 
 export type DiagnosticSubmission = typeof diagnosticSubmissions.$inferSelect;
 export type InsertDiagnosticSubmission = typeof diagnosticSubmissions.$inferInsert;
+
+export const diagnosticMaterials = mysqlTable("diagnosticMaterials", {
+  id: int("id").autoincrement().primaryKey(),
+  submissionId: int("submissionId").notNull(),
+  category: varchar("category", { length: 64 }).notNull(),
+  notes: text("notes"),
+  fileName: varchar("fileName", { length: 512 }),
+  storageKey: varchar("storageKey", { length: 1024 }),
+  fileUrl: varchar("fileUrl", { length: 1024 }),
+  contentType: varchar("contentType", { length: 191 }),
+  sizeBytes: int("sizeBytes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DiagnosticMaterial = typeof diagnosticMaterials.$inferSelect;
+export type InsertDiagnosticMaterial = typeof diagnosticMaterials.$inferInsert;

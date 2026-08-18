@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { diagnosticSubmissions, InsertDiagnosticSubmission, InsertUser, users } from "../drizzle/schema";
+import { diagnosticMaterials, diagnosticSubmissions, InsertDiagnosticMaterial, InsertDiagnosticSubmission, InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -106,4 +106,12 @@ export async function updateDiagnosticEmailStatus(
   if (!db) throw new Error("Banco de dados indisponível.");
 
   await db.update(diagnosticSubmissions).set({ emailStatus: status, emailError: error }).where(eq(diagnosticSubmissions.id, id));
+}
+
+export async function createDiagnosticMaterials(materials: InsertDiagnosticMaterial[]) {
+  if (materials.length === 0) return;
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  await db.insert(diagnosticMaterials).values(materials);
 }
