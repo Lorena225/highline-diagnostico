@@ -41,3 +41,8 @@
 - [x] Incluir orientações breves, campos narrativos e proteções de privacidade conforme a versão final fornecida.
 - [x] Manter somente a área opcional final de materiais institucionais, autorizados ou anonimizados.
 - [x] Ajustar a navegação, o progresso e os textos de apoio para tornar o preenchimento mais claro e menos burocrático.
+- [x] Refinar a abertura de cada bloco para leitura acolhedora em até três linhas.
+- [x] Redistribuir perguntas longas e ampliar campos narrativos para reduzir densidade e ansiedade.
+- [x] Ajustar ritmo visual, espaços em branco e hierarquia entre perguntas objetivas e estratégicas.
+- [x] Refinar os cards opcionais de materiais e a mensagem positiva de encerramento sem alterar conteúdo.
+- [x] Validar a nova experiência em desktop e celular com foco em legibilidade e responsividade.

@@ -10,6 +10,7 @@ type AnswerMap = Record<string, AnswerValue>;
 type Respondent = { name: string; role: string; email: string; phone: string };
 type MaterialCategory = "digital" | "commercial" | "institutional";
 type MaterialAreaState = { category: MaterialCategory; notes: string; files: File[] };
+const QUESTIONS_PER_PAGE = 3;
 
 const DRAFT_KEY = "highline-diagnostic-draft-v2";
 const asset = {
@@ -50,23 +51,27 @@ function QuestionField({ question, answer, onChange, questionNumber }: { questio
   }
 
   const isCompact = ["text", "email", "tel", "number"].includes(question.type || "textarea");
-  return <div className="question-field"><label htmlFor={inputId}><span className="question-number">{String(questionNumber).padStart(2, "0")}</span>{question.label}</label>{question.helper && <p className="field-helper">{question.helper}</p>}{isCompact ? <input id={inputId} className="text-input" type={question.type || "text"} value={textValue} onChange={event => onChange(event.target.value)} /> : <textarea id={inputId} className="answer-area" rows={5} value={textValue} onChange={event => onChange(event.target.value)} placeholder="Escreva sua resposta com o máximo de contexto que puder…"/>}{question.note && <p className="question-note"><ShieldCheck size={14}/><span>{question.note}</span></p>}</div>;
+  const isStrategicNarrative = ["historia_origem", "visao_inegociavel", "visao_educacao_aluno", "entrega_melhor_que_explicacao", "familias_que_valorizam", "familia_ideal", "experiencia_visita", "visita_inesquecivel"].includes(question.id);
+  return <div className={`question-field ${isStrategicNarrative ? "question-field--narrative" : ""}`}><label htmlFor={inputId}><span className="question-number">{String(questionNumber).padStart(2, "0")}</span>{question.label}</label>{question.helper && <p className="field-helper">{question.helper}</p>}{isCompact ? <input id={inputId} className="text-input" type={question.type || "text"} value={textValue} onChange={event => onChange(event.target.value)} /> : <textarea id={inputId} className="answer-area" rows={isStrategicNarrative ? 8 : 5} value={textValue} onChange={event => onChange(event.target.value)} placeholder="Escreva sua resposta com o máximo de contexto que puder…"/>}{question.note && <p className="question-note"><ShieldCheck size={14}/><span>{question.note}</span></p>}</div>;
 }
 
 export default function Home() {
-  const finalPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "final";
-  const [activeStep, setActiveStep] = useState(() => finalPreview ? DIAGNOSTIC_SECTIONS.length : -1);
+  const preview = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("preview") : null;
+  const previewStep = preview === "final" ? DIAGNOSTIC_SECTIONS.length : preview?.startsWith("step-") ? Math.min(DIAGNOSTIC_SECTIONS.length, Math.max(0, Number(preview.replace("step-", "")) || 0)) : null;
+  const isPreviewing = previewStep !== null;
+  const [activeStep, setActiveStep] = useState(() => previewStep ?? -1);
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [respondent, setRespondent] = useState<Respondent>({ name: "", role: "", email: "", phone: "" });
   const [accepted, setAccepted] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState("");
   const [complete, setComplete] = useState(false);
+  const [questionPage, setQuestionPage] = useState(0);
   const [materialAreas, setMaterialAreas] = useState<MaterialAreaState[]>(() => MATERIAL_AREAS.map(area => ({ category: area.category, notes: "", files: [] })));
   const submit = trpc.diagnostic.submit.useMutation();
 
   useEffect(() => {
-    if (finalPreview) return;
+    if (isPreviewing) return;
     const draft = window.localStorage.getItem(DRAFT_KEY);
     if (!draft) return;
     try {
@@ -79,14 +84,16 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (complete || finalPreview) return;
+    if (complete || isPreviewing) return;
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, respondent, accepted, activeStep }));
   }, [answers, respondent, accepted, activeStep, complete]);
 
   const totalSteps = DIAGNOSTIC_SECTIONS.length + 1;
   const currentSection = activeStep > 0 ? DIAGNOSTIC_SECTIONS[activeStep - 1] : null;
+  const sectionPageCount = currentSection ? Math.ceil(currentSection.questions.length / QUESTIONS_PER_PAGE) : 1;
+  const visibleQuestions = currentSection ? currentSection.questions.slice(questionPage * QUESTIONS_PER_PAGE, (questionPage + 1) * QUESTIONS_PER_PAGE) : [];
   const progress = activeStep < 0 ? 0 : Math.min(100, Math.round(((activeStep + 1) / totalSteps) * 100));
-  const questionOffset = activeStep <= 1 ? 0 : DIAGNOSTIC_SECTIONS.slice(0, activeStep - 1).reduce((total, section) => total + section.questions.length, 0);
+  const questionOffset = (activeStep <= 1 ? 0 : DIAGNOSTIC_SECTIONS.slice(0, activeStep - 1).reduce((total, section) => total + section.questions.length, 0)) + questionPage * QUESTIONS_PER_PAGE;
 
   const begin = () => {
     setActiveStep(0);
@@ -94,7 +101,9 @@ export default function Home() {
   };
   const updateAnswer = (id: string, value: AnswerValue) => setAnswers(current => ({ ...current, [id]: value }));
   const updateRespondent = (key: keyof Respondent, value: string) => setRespondent(current => ({ ...current, [key]: value }));
-  const jumpTo = (index: number) => { setActiveStep(index); setShowMenu(false); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const jumpTo = (index: number) => { setActiveStep(index); setQuestionPage(0); setShowMenu(false); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const previousPage = () => { if (currentSection && questionPage > 0) { setQuestionPage(page => page - 1); return; } jumpTo(Math.max(0, activeStep - 1)); };
+  const nextPage = () => { if (currentSection && questionPage < sectionPageCount - 1) { setQuestionPage(page => page + 1); return; } jumpTo(activeStep + 1); };
   const updateMaterialNotes = (category: MaterialCategory, notes: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, notes } : area));
   const removeMaterialFile = (category: MaterialCategory, fileName: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, files: area.files.filter(file => `${file.name}-${file.lastModified}` !== fileName) } : area));
   const addMaterialFiles = (category: MaterialCategory, fileList: FileList | null) => {
@@ -143,9 +152,9 @@ export default function Home() {
       <div className="diagnostic-layout">
         <aside className="step-aside"><p className="eyebrow">Mapa do diagnóstico</p><div className="step-list"><button type="button" className={`step-link ${activeStep === 0 ? "step-link--active" : ""}`} onClick={() => jumpTo(0)}><span>00</span>Identificação</button>{DIAGNOSTIC_SECTIONS.map((section, index) => <button type="button" className={`step-link ${activeStep === index + 1 ? "step-link--active" : ""}`} onClick={() => jumpTo(index + 1)} key={section.id}><span>{String(index + 1).padStart(2, "0")}</span>{section.title}</button>)}</div><div className="aside-status"><Compass size={16}/><span>8 blocos estratégicos</span></div></aside>
         <div className="form-card">
-          {activeStep < 0 ? <div className="ready-state"><span className="ready-icon"><Sparkles size={21}/></span><p className="eyebrow">Ponto de partida</p><h2>Vamos construir uma leitura completa da High Line.</h2><p>O questionário está organizado em oito blocos estratégicos. Você pode navegar livremente entre as etapas: suas respostas ficam salvas neste dispositivo até o envio final.</p><button type="button" className="primary-button" onClick={begin}>Começar agora <ArrowRight size={17}/></button></div> : activeStep === 0 ? <div className="identity-step"><p className="eyebrow">Etapa 00 · Identificação</p><h2>Quem está respondendo?</h2><p className="step-intro">Esses dados permitem que a VirtruvIA compreenda o contexto de cada resposta e faça os acompanhamentos necessários.</p><div className="identity-grid"><div className="question-field"><label htmlFor="respondent-name"><span className="question-number">01</span>Nome completo <b>*</b></label><input id="respondent-name" className="text-input" value={respondent.name} onChange={event => updateRespondent("name", event.target.value)} autoComplete="name"/></div><div className="question-field"><label htmlFor="respondent-role"><span className="question-number">02</span>Cargo ou área</label><input id="respondent-role" className="text-input" value={respondent.role} onChange={event => updateRespondent("role", event.target.value)}/></div><div className="question-field"><label htmlFor="respondent-email"><span className="question-number">03</span>E-mail <b>*</b></label><input id="respondent-email" className="text-input" type="email" value={respondent.email} onChange={event => updateRespondent("email", event.target.value)} autoComplete="email"/></div><div className="question-field"><label htmlFor="respondent-phone"><span className="question-number">04</span>Telefone</label><input id="respondent-phone" className="text-input" type="tel" value={respondent.phone} onChange={event => updateRespondent("phone", event.target.value)} autoComplete="tel"/></div></div></div> : currentSection ? <div className="section-step"><div className="section-heading"><div><p className="eyebrow">Bloco {String(activeStep).padStart(2, "0")}</p><h2>{currentSection.title}</h2></div><span className="question-total">{currentSection.questions.length} perguntas</span></div><p className="section-rationale">{currentSection.rationale}</p><div className="section-questions">{currentSection.questions.map((question, index) => <QuestionField question={question} answer={answers[question.id]} onChange={value => updateAnswer(question.id, value)} questionNumber={questionOffset + index + 1} key={question.id}/>)}</div></div> : null}
+          {activeStep < 0 ? <div className="ready-state"><span className="ready-icon"><Sparkles size={21}/></span><p className="eyebrow">Ponto de partida</p><h2>Vamos construir uma leitura completa da High Line.</h2><p>O questionário está organizado em oito blocos estratégicos. Você pode navegar livremente entre as etapas: suas respostas ficam salvas neste dispositivo até o envio final.</p><button type="button" className="primary-button" onClick={begin}>Começar agora <ArrowRight size={17}/></button></div> : activeStep === 0 ? <div className="identity-step"><p className="eyebrow">Etapa 00 · Identificação</p><h2>Quem está respondendo?</h2><p className="step-intro">Esses dados permitem que a VirtruvIA compreenda o contexto de cada resposta e faça os acompanhamentos necessários.</p><div className="identity-grid"><div className="question-field"><label htmlFor="respondent-name"><span className="question-number">01</span>Nome completo <b>*</b></label><input id="respondent-name" className="text-input" value={respondent.name} onChange={event => updateRespondent("name", event.target.value)} autoComplete="name"/></div><div className="question-field"><label htmlFor="respondent-role"><span className="question-number">02</span>Cargo ou área</label><input id="respondent-role" className="text-input" value={respondent.role} onChange={event => updateRespondent("role", event.target.value)}/></div><div className="question-field"><label htmlFor="respondent-email"><span className="question-number">03</span>E-mail <b>*</b></label><input id="respondent-email" className="text-input" type="email" value={respondent.email} onChange={event => updateRespondent("email", event.target.value)} autoComplete="email"/></div><div className="question-field"><label htmlFor="respondent-phone"><span className="question-number">04</span>Telefone</label><input id="respondent-phone" className="text-input" type="tel" value={respondent.phone} onChange={event => updateRespondent("phone", event.target.value)} autoComplete="tel"/></div></div></div> : currentSection ? <div className="section-step"><div className="section-heading"><div><p className="eyebrow">Bloco {String(activeStep).padStart(2, "0")}</p><h2>{currentSection.title}</h2></div><span className="question-total">Parte {questionPage + 1} de {sectionPageCount}</span></div><p className="section-rationale">{currentSection.rationale}</p><div className="section-questions">{visibleQuestions.map((question, index) => <QuestionField question={question} answer={answers[question.id]} onChange={value => updateAnswer(question.id, value)} questionNumber={questionOffset + index + 1} key={question.id}/>)}</div></div> : null}
 
-          {activeStep >= 0 && <div className="form-navigation">{activeStep > 0 ? <button className="secondary-button" type="button" onClick={() => jumpTo(activeStep - 1)}><ArrowLeft size={16}/> Voltar</button> : <span/>}{activeStep < DIAGNOSTIC_SECTIONS.length ? <button className="primary-button" type="button" onClick={() => jumpTo(activeStep + 1)}>Continuar <ArrowRight size={16}/></button> : <button className="primary-button" type="button" onClick={() => { document.querySelector("#submission")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>Revisar e enviar <ArrowRight size={16}/></button>}</div>}
+          {activeStep >= 0 && <div className="form-navigation">{activeStep > 0 || questionPage > 0 ? <button className="secondary-button" type="button" onClick={previousPage}><ArrowLeft size={16}/> Voltar</button> : <span/>}{activeStep < DIAGNOSTIC_SECTIONS.length ? <button className="primary-button" type="button" onClick={nextPage}>{currentSection && questionPage < sectionPageCount - 1 ? "Próximas perguntas" : "Continuar"} <ArrowRight size={16}/></button> : <button className="primary-button" type="button" onClick={() => { document.querySelector("#submission")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>Revisar e enviar <ArrowRight size={16}/></button>}</div>}
         </div>
       </div>
 
