@@ -112,3 +112,4 @@
 - [x] Entregar a habilidade reutilizável como pacote instalável independente do site.
 - [x] Mapear todos os formulários e aplicar a animação suave de carregamento em cada envio assíncrono.
 - [x] Diagnosticar e corrigir a ausência percebida da animação de carregamento no domínio publicado.
+- [ ] Comparar e corrigir a versão, a logo e as animações efetivamente exibidas no domínio público.

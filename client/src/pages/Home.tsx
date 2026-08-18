@@ -18,9 +18,9 @@ const QUESTIONS_PER_PAGE = 1;
 
 const DRAFT_KEY = "highline-diagnostic-draft-v2";
 const asset = {
-  logo: "/manus-storage/logo-virtruvia-oficial_ea87e7b1.png",
-  texture: "/manus-storage/hero-texture-logo_640382f7.webp",
-  renaissance: "/manus-storage/hero-renaissance_a008c2cd.webp",
+  logo: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663589889937/bpgBGXvNNVEVPocx.png",
+  texture: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663589889937/DrKYpBKePnDNVuBq.webp",
+  renaissance: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663589889937/JEDDDuHHTRWrApck.webp",
 };
 const MATERIAL_AREAS: Array<{ category: MaterialCategory; title: string; description: string }> = [
   { category: "digital", title: "Links e ativos digitais", description: "Site, redes sociais, Google Business Profile, landing pages, campanhas, anúncios, vídeos e outros ativos públicos." },
