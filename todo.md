@@ -111,3 +111,4 @@
 - [x] Preparar a habilidade reutilizável como pacote instalável independente do site.
 - [x] Entregar a habilidade reutilizável como pacote instalável independente do site.
 - [x] Mapear todos os formulários e aplicar a animação suave de carregamento em cada envio assíncrono.
+- [ ] Diagnosticar e corrigir a ausência percebida da animação de carregamento no domínio publicado.

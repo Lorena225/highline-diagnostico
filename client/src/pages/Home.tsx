@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardList, Compass, FileText, FileUp, Loader2, Mail, Menu, Paperclip, ShieldCheck, Sparkles, X } from "lucide-react";
 import { DIAGNOSTIC_SECTIONS, TOTAL_QUESTIONS, type DiagnosticQuestion } from "@shared/diagnostic";
 import { isSupportedMaterialFile, MATERIAL_ACCEPT_ATTRIBUTE, MAX_MATERIAL_FILE_BYTES } from "@shared/materials";
@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { parseDiagnosticDraft, serializeDiagnosticDraft } from "@/lib/diagnosticDraft";
 import { canNavigateToConversationStep, isConversationAnswerDetailed, isConversationAnswerPresent, nextConversationPosition, previousConversationPosition } from "@/lib/conversationFlow";
 import { generateDiagnosticPdf } from "@/lib/diagnosticPdf";
+import { scheduleSubmitOverlay } from "@/lib/submitOverlay";
 
 type StructuredAnswer = Record<string, string>;
 type AnswerValue = string | string[] | StructuredAnswer;
@@ -81,6 +82,8 @@ export default function Home() {
   const [questionPage, setQuestionPage] = useState(() => preview === "final" || preview === "review" ? Math.ceil(DIAGNOSTIC_SECTIONS.at(-1)!.questions.length / QUESTIONS_PER_PAGE) - 1 : 0);
   const [draftStatus, setDraftStatus] = useState("Rascunho salvo neste dispositivo");
   const [materialAreas, setMaterialAreas] = useState<MaterialAreaState[]>(() => MATERIAL_AREAS.map(area => ({ category: area.category, notes: "", files: [] })));
+  const [showSubmitOverlay, setShowSubmitOverlay] = useState(false);
+  const cancelSubmitOverlay = useRef<(() => void) | null>(null);
   const submit = trpc.diagnostic.submit.useMutation();
 
   useEffect(() => {
@@ -118,6 +121,10 @@ export default function Home() {
     }, 600);
     return () => window.clearTimeout(timeout);
   }, [answers, respondent, accepted, activeStep, questionPage, complete]);
+
+  useEffect(() => () => {
+    cancelSubmitOverlay.current?.();
+  }, []);
 
   const totalSteps = DIAGNOSTIC_SECTIONS.length + 1;
   const currentSection = activeStep > 0 ? DIAGNOSTIC_SECTIONS[activeStep - 1] : null;
@@ -173,6 +180,9 @@ export default function Home() {
     if (incomplete) { setActiveStep(incomplete.sectionIndex + 1); setQuestionPage(incomplete.questionIndex); setError("Há uma resposta obrigatória pendente ou curta. Complete-a antes de enviar."); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (!accepted) { setError("Confirme que você está autorizado(a) a compartilhar estas informações antes de enviar."); return; }
     setError("");
+    setShowSubmitOverlay(false);
+    cancelSubmitOverlay.current?.();
+    cancelSubmitOverlay.current = scheduleSubmitOverlay(() => setShowSubmitOverlay(true));
     try {
       const materials = await Promise.all(materialAreas.filter(area => area.notes.trim() || area.files.length > 0).map(async area => ({ category: area.category, notes: area.notes.trim() || undefined, files: await Promise.all(area.files.map(async file => ({ name: file.name, contentType: file.type || "application/octet-stream", dataBase64: await toBase64(file) }))) })));
       const result = await submit.mutateAsync({ respondent, answers, materials });
@@ -184,6 +194,11 @@ export default function Home() {
       setComplete(true);
       document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch { setError("Não foi possível concluir o envio agora. Suas respostas permanecem salvas neste dispositivo; tente novamente em alguns instantes."); }
+    finally {
+      cancelSubmitOverlay.current?.();
+      cancelSubmitOverlay.current = null;
+      setShowSubmitOverlay(false);
+    }
   };
 
   const downloadAnswersPdf = () => {
@@ -225,7 +240,7 @@ export default function Home() {
 
     <footer className="site-footer"><span className="footer-renaissance" style={{ backgroundImage: `url(${asset.renaissance})` }}/><div><img src={asset.logo} alt="VirtruvIA"/><p>Estratégia, verdade e crescimento com intenção.</p></div><div className="footer-note">Diagnóstico 360°<br/>High Line School Goiânia</div></footer>
 
-    {submit.isPending && <div className="submit-overlay" role="status" aria-live="polite" aria-label="Enviando o diagnóstico"><div className="submit-panel"><div className="loading-orbit"><VitruvianMark small/><span className="loading-orbit__center"><Loader2 size={23} className="spin"/></span></div><p className="eyebrow">Momento de síntese</p><h2>Estamos guardando cada resposta com cuidado.</h2><p>Registrando o diagnóstico e preparando a confirmação para a equipe VirtruvIA.</p><div className="loading-line"><span/></div><div className="loading-steps"><span><i/>Respostas registradas</span><span><i/>Confirmação em processamento</span></div></div></div>}
+    {showSubmitOverlay && <div className="submit-overlay" role="status" aria-live="polite" aria-label="Enviando o diagnóstico"><div className="submit-panel"><div className="loading-orbit"><VitruvianMark small/><span className="loading-orbit__center"><Loader2 size={23} className="spin"/></span></div><p className="eyebrow">Momento de síntese</p><h2>Estamos guardando cada resposta com cuidado.</h2><p>Registrando o diagnóstico e preparando a confirmação para a equipe VirtruvIA.</p><div className="loading-line"><span/></div><div className="loading-steps"><span><i/>Respostas registradas</span><span><i/>Confirmação em processamento</span></div></div></div>}
 
     {showMenu && <div className="mobile-menu" role="dialog" aria-modal="true" aria-label="Etapas do diagnóstico"><button className="menu-backdrop" aria-label="Fechar menu" onClick={() => setShowMenu(false)}/><div className="menu-panel"><button className="close-menu" aria-label="Fechar" onClick={() => setShowMenu(false)}><X size={19}/></button><p className="eyebrow">Navegação</p><h2>Etapas do diagnóstico</h2><button type="button" className="step-link" onClick={() => jumpTo(0)}><span>00</span>Identificação</button>{DIAGNOSTIC_SECTIONS.map((section, index) => <button type="button" className="step-link" onClick={() => jumpTo(index + 1)} key={section.id}><span>{String(index + 1).padStart(2, "0")}</span>{section.title}</button>)}</div></div>}
   </main>;
