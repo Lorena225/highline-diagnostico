@@ -1,9 +1,7 @@
-import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { DIAGNOSTIC_SECTIONS } from "../shared/diagnostic";
-import { diagnosticSubmissions } from "../drizzle/schema";
-import { getDb } from "./db";
 import { appRouter } from "./routers";
+import { getSupabaseAdmin } from "./supabase";
 
 const enabled = process.env.RUN_LIVE_DIAGNOSTIC_EMAIL_TEST === "1";
 
@@ -39,19 +37,19 @@ describe("diagnóstico ponta a ponta", () => {
     expect(receiptResponse.status).toBe(302);
     expect(receiptResponse.headers.get("location")).toContain("http");
 
-    const db = await getDb();
-    expect(db).not.toBeNull();
-    const rows = await db!.select().from(diagnosticSubmissions).where(eq(diagnosticSubmissions.respondentName, marker)).limit(1);
+    const supabase = getSupabaseAdmin();
+    expect(supabase).not.toBeNull();
+    const { data, error } = await supabase!.from("diagnostic_submissions").select("respondent_role, respondent_email, email_status, email_error, receipt_storage_key, receipt_access_token, receipt_expires_at").eq("respondent_name", marker).limit(1).single();
 
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({
-      respondentRole: "Validação técnica",
-      respondentEmail: "diagnostico@virtruvia.com.br",
-      emailStatus: "sent",
-      emailError: null,
-      receiptStorageKey: expect.stringContaining("comprovante-diagnostico"),
-      receiptAccessToken: expect.stringMatching(/^[a-f0-9]{64}$/),
-      receiptExpiresAt: expect.any(Date),
+    expect(error).toBeNull();
+    expect(data).toMatchObject({
+      respondent_role: "Validação técnica",
+      respondent_email: "diagnostico@virtruvia.com.br",
+      email_status: "sent",
+      email_error: null,
+      receipt_storage_key: expect.stringContaining("comprovante-diagnostico"),
+      receipt_access_token: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
+    expect(new Date(data!.receipt_expires_at).getTime()).toBeGreaterThan(Date.now());
   }, 30_000);
 });

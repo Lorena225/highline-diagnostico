@@ -3,6 +3,9 @@
 // Downloads return /manus-storage/{key} paths served via 307 redirect.
 
 import { ENV } from "./_core/env";
+import { getSupabaseAdmin } from "./supabase";
+
+const DIAGNOSTIC_BUCKET = "diagnostic-assets";
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;
@@ -33,8 +36,14 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    const { error } = await supabase.storage.from(DIAGNOSTIC_BUCKET).upload(key, data, { contentType, upsert: false });
+    if (error) throw new Error(`Supabase Storage: ${error.message}`);
+    return { key, url: `supabase://${DIAGNOSTIC_BUCKET}/${key}` };
+  }
+  const { forgeUrl, forgeKey } = getForgeConfig();
 
   // 1. Get presigned PUT URL from Forge
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
@@ -77,6 +86,12 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    const { data, error } = await supabase.storage.from(DIAGNOSTIC_BUCKET).createSignedUrl(normalizeKey(relKey), 60 * 60 * 24 * 7);
+    if (error || !data?.signedUrl) throw new Error(`Supabase Storage: ${error?.message ?? "falha ao gerar link protegido"}`);
+    return data.signedUrl;
+  }
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = normalizeKey(relKey);
 

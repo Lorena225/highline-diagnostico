@@ -88,17 +88,18 @@ export const diagnosticRouter = router({
               bytes,
               file.contentType,
             );
+            const fileUrl = await storageGetSignedUrl(saved.key);
             materialRecords.push({
               submissionId: submission.id,
               category: area.category,
               notes,
               fileName: file.name,
               storageKey: saved.key,
-              fileUrl: saved.url,
+              fileUrl,
               contentType: file.contentType,
               sizeBytes: bytes.length,
             });
-            storedMaterials.push({ category: area.category, notes, fileName: file.name, fileUrl: saved.url });
+            storedMaterials.push({ category: area.category, notes, fileName: file.name, fileUrl });
           }
         }
 
