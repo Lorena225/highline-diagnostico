@@ -46,3 +46,12 @@
 - [x] Ajustar ritmo visual, espaços em branco e hierarquia entre perguntas objetivas e estratégicas.
 - [x] Refinar os cards opcionais de materiais e a mensagem positiva de encerramento sem alterar conteúdo.
 - [x] Validar a nova experiência em desktop e celular com foco em legibilidade e responsividade.
+- [x] Implementar salvamento manual explícito e indicador de rascunho salvo.
+- [x] Retomar automaticamente o questionário na pergunta exata em que o preenchimento foi interrompido.
+- [x] Exibir uma pergunta por vez, com avanço e retorno conversacionais.
+- [x] Tornar as respostas obrigatórias com validação clara antes de avançar.
+- [x] Orientar respostas narrativas curtas para que tragam contexto suficiente ao diagnóstico.
+- [x] Incluir aprofundamentos estratégicos de marketing, comercial e posicionamento sem introduzir burocracia excessiva.
+- [x] Validar a nova jornada em desktop e celular, incluindo salvamento, retomada e preenchimento completo, por cobertura automatizada de rascunho e navegação.
+- [x] Adicionar aprofundamentos verificáveis para decisões de marketing, comercial e posicionamento no conteúdo do diagnóstico.
+- [x] Validar funcionalmente o salvamento manual, a retomada na pergunta exata e a navegação conversacional completa.

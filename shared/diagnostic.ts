@@ -85,7 +85,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     questions: [
       text("concorrentes_prioritarios", "Cite até três concorrentes prioritários da High Line e indique se eles competem principalmente na Educação Infantil, no Ensino Fundamental ou em ambos os segmentos."),
       structured("leitura_concorrentes", "Para cada concorrente, descreva brevemente a proposta percebida, força de marca ou comunicação, o que fazem bem, em que a High Line acredita ser superior e o risco ou oportunidade que representam.", ["Concorrente 1", "Concorrente 2", "Concorrente 3"]),
-      text("comparacao_lacuna", "Quando famílias comparam a High Line com outras escolas, quais critérios pesam mais, onde vocês acreditam que perdem e qual lacuna de mercado podem ocupar?"),
+      structured("comparacao_lacuna", "Quando famílias comparam a High Line com outras escolas, onde está a oportunidade mais relevante de posicionamento?", ["Critérios que mais pesam na comparação", "Onde a High Line acredita perder hoje", "Lacuna de mercado e posição premium que pode conquistar"]),
       text("marcas_admiradas", "Cite até três marcas ou instituições que vocês admiram pela experiência, atendimento ou comunicação. O que especificamente admiram em cada uma?"),
       text("percepcao_valor_qualidade", "Em uma frase, sobre percepção de valor e posição em qualidade, o que vocês gostariam que viesse à mente de uma família goiana ao ouvir o nome High Line School?", "Pense na associação espontânea que a marca deve conquistar: não apenas no que a escola faz, mas no lugar que deve ocupar na mente das famílias."),
     ],
@@ -95,7 +95,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     title: "Marketing, presença e reputação",
     rationale: "Este bloco avalia como a High Line se apresenta ao mercado hoje. O foco não é apenas alcance ou volume de leads, mas a capacidade de comunicar a essência da escola, gerar confiança e atrair famílias compatíveis.",
     questions: [
-      text("acoes_e_agencia", "Descreva as principais ações, canais, campanhas e investimentos de marketing dos últimos 12 meses. O que funcionou, o que não funcionou e quais responsabilidades a agência atual assume? O que ela compreende bem sobre a High Line e o que ainda não consegue traduzir ou entregar?"),
+      structured("acoes_e_agencia", "Descreva o que a High Line já fez em marketing e o que precisa mudar para atrair famílias mais compatíveis.", ["Canais, ações e campanhas dos últimos 12 meses", "O que trouxe interesse qualificado e o que não funcionou", "O que a agência atual compreende bem e o que ainda não traduz ou entrega"]),
       text("ativos_e_conteudos", "Quais ativos digitais e conteúdos melhor traduzem a High Line hoje e quais parecem desconectados da essência ou não geram interesse qualificado?"),
       { id: "nota_presenca_digital", label: "Em uma escala de 0 a 10, como você avalia a presença digital atual da High Line? Por quê?", type: "scale" },
       text("acervo_conteudo", "A escola possui fotos, vídeos, histórias, professores e famílias disponíveis para uma produção recorrente de conteúdo? Descreva brevemente o que existe hoje, priorizando materiais institucionais, autorizados ou anonimizados."),
@@ -108,7 +108,7 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     title: "Jornada comercial, visita e conversão",
     rationale: "Uma matrícula é consequência de uma jornada bem conduzida. Este bloco identifica como uma família é recebida, qualificada, encantada e acompanhada até a decisão, sem transformar o processo em uma venda genérica ou pressionada.",
     questions: [
-      text("primeiro_atendimento", "Como funciona o primeiro atendimento e a qualificação de um lead, desde a entrada do contato até o agendamento de uma visita? Quem atende hoje, por quais canais e qual é a percepção da escola sobre agilidade e qualidade desse atendimento?"),
+      structured("primeiro_atendimento", "Como funciona o primeiro atendimento e a qualificação de um lead até o agendamento da visita?", ["Quem atende e por quais canais", "Como a família é qualificada e encaminhada", "Percepção de agilidade, qualidade e principais falhas"]),
       text("investimento_objecoes", "Como o time apresenta o investimento, lida com objeções e registra o relacionamento com a família até a decisão de matrícula?"),
       text("experiencia_visita", "Descreva a experiência atual de visita: quem recebe a família, o que ela conhece, como a proposta é apresentada e o que ela recebe ao final."),
       text("pos_visita", "O que acontece depois da visita: proposta, contatos posteriores, acompanhamento, principais perdas e próximos passos?"),
