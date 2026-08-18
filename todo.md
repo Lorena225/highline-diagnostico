@@ -1,0 +1,20 @@
+# Project TODO
+
+- [x] Mapear o diagnóstico fornecido em seções e perguntas estruturadas.
+- [x] Reproduzir a identidade visual da Virtruvia na página de apresentação e na jornada do formulário.
+- [x] Criar uma página de apresentação executiva do Diagnóstico 360º High Line School.
+- [x] Implementar questionário responsivo com textos livres, opções de seleção e escalas de avaliação.
+- [x] Exibir navegação entre seções, preservação de respostas em andamento e barra de progresso acessível.
+- [x] Persistir cada envio completo com identificação do respondente e data/hora no banco de dados.
+- [x] Enviar automaticamente um e-mail formatado com todas as respostas para agenciavirtruvia@gmail.com após a conclusão.
+- [x] Substituir o adaptador de entrega por SMTP seguro da conta diagnostico@virtruvia.com.br, com SSL/TLS e porta 465.
+- [x] Confirmar os nameservers oficiais ou os registros DNS da HostGator para restabelecer a resolução pública do domínio e do servidor SMTP.
+- [x] Obter da HostGator nameservers públicos autoritativos, pois os hosts exibidos na zona cPanel são recusados como DNS desconhecido pelo Registro.br. Resolvido por zona DNS pública funcional.
+- [x] Preservar todos os registros atuais da zona caso seja necessário migrar a delegação para o DNS do Registro.br. Não aplicável: a zona atual foi mantida e validada, sem migração planejada.
+- [x] Verificar a resolução pública restaurada do domínio e a autenticação SMTP após a atualização de DNS.
+- [x] Revalidar os registros DNS após a atualização informada pela cliente.
+- [x] Aplicar a exceção aprovada para o certificado SMTP autoassinado e validar a autenticação sem enviar mensagens de teste.
+- [x] Exibir uma tela de confirmação e agradecimento após envio bem-sucedido.
+- [x] Cobrir persistência, formatação de e-mail e envio com testes automatizados.
+- [x] Validar a experiência desktop e móvel, além de verificar erros de compilação.
+- [x] Substituir a estrutura inicial pelo questionário final editado, incluindo os blocos, instruções e solicitações de materiais complementares.
