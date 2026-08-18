@@ -3,6 +3,9 @@
   "framework": "vite",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
+  "functions": {
+    "api/[...path].js": { "maxDuration": 60 }
+  },
   "rewrites": [
     { "source": "/manus-storage/(.*)", "destination": "/api/[...path]" },
     { "source": "/api/(.*)", "destination": "/api/[...path]" },
