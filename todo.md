@@ -55,3 +55,12 @@
 - [x] Validar a nova jornada em desktop e celular, incluindo salvamento, retomada e preenchimento completo, por cobertura automatizada de rascunho e navegação.
 - [x] Adicionar aprofundamentos verificáveis para decisões de marketing, comercial e posicionamento no conteúdo do diagnóstico.
 - [x] Validar funcionalmente o salvamento manual, a retomada na pergunta exata e a navegação conversacional completa.
+- [x] Criar uma tela de resumo completa com todas as respostas antes do envio definitivo.
+- [x] Permitir editar qualquer bloco diretamente a partir da revisão.
+- [x] Gerar e disponibilizar um PDF de respostas na confirmação de sucesso.
+- [x] Validar a revisão, a edição e o download do PDF em desktop e celular.
+- [x] Incluir identificação completa e materiais opcionais na revisão final e no PDF.
+- [x] Permitir retornar diretamente da revisão à etapa de materiais antes do envio.
+- [x] Cobrir integralmente a geração de PDF e a revisão final com os dados submetidos.
+- [x] Criar uma prévia controlada da revisão com identificação, respostas e materiais simulados para inspeção visual.
+- [x] Validar a geração do PDF com identificação e materiais em cenário de dados completos.
