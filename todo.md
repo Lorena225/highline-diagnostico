@@ -103,3 +103,7 @@
 - [x] Implantar em produção a revisão sincronizada e confirmar que o domínio utiliza esse commit.
 - [x] Seguir o link seguro mais recente e confirmar o download final do comprovante PDF publicado.
 - [x] Substituir as marcas exibidas pela logo oficial da VirtruvIA e validar o cabeçalho, hero e rodapé em desktop e celular.
+- [x] Criar e validar uma habilidade reutilizável para estruturar, publicar e validar diagnósticos estratégicos VirtruvIA.
+- [x] Refinar a animação de carregamento no botão de envio do diagnóstico.
+- [x] Adicionar o favicon oficial da VirtruvIA à aba do navegador.
+- [ ] Sincronizar as últimas alterações de habilidade, carregamento e favicon no domínio publicado.
