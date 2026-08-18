@@ -108,6 +108,12 @@ export async function updateDiagnosticEmailStatus(
   await db.update(diagnosticSubmissions).set({ emailStatus: status, emailError: error }).where(eq(diagnosticSubmissions.id, id));
 }
 
+export async function updateDiagnosticReceipt(id: number, receiptStorageKey: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+  await db.update(diagnosticSubmissions).set({ receiptStorageKey }).where(eq(diagnosticSubmissions.id, id));
+}
+
 export async function createDiagnosticMaterials(materials: InsertDiagnosticMaterial[]) {
   if (materials.length === 0) return;
   const db = await getDb();

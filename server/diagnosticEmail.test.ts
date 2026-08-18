@@ -13,7 +13,7 @@ describe("formatDiagnosticEmail", () => {
 
     expect(message.html).toContain("Ana Gestão");
     expect(message.html).toContain("Uma resposta estratégica completa.");
-    expect(message.plainText).toContain("DIAGNÓSTICO 360° — HIGH LINE SCHOOL");
+    expect(message.plainText).toContain("DIAGNÓSTICO 360° HIGH LINE SCHOOL");
     expect(message.plainText).toContain("Diretora");
     DIAGNOSTIC_SECTIONS.forEach(section => expect(message.html).toContain(section.title));
   });

@@ -34,6 +34,7 @@ export const diagnosticSubmissions = mysqlTable("diagnosticSubmissions", {
   answers: json("answers").$type<Record<string, string | string[] | Record<string, string>>>().notNull(),
   emailStatus: mysqlEnum("emailStatus", ["pending", "sent", "failed"]).default("pending").notNull(),
   emailError: text("emailError"),
+  receiptStorageKey: varchar("receiptStorageKey", { length: 1024 }),
   submittedAt: timestamp("submittedAt").defaultNow().notNull(),
 });
 

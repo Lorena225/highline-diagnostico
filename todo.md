@@ -64,3 +64,10 @@
 - [x] Cobrir integralmente a geração de PDF e a revisão final com os dados submetidos.
 - [x] Criar uma prévia controlada da revisão com identificação, respostas e materiais simulados para inspeção visual.
 - [x] Validar a geração do PDF com identificação e materiais em cenário de dados completos.
+- [x] Bloquear a navegação entre blocos até que a pergunta atual esteja respondida e validada.
+- [x] Aplicar numeração de páginas, assinatura visual e layout profissional ao PDF VirtruvIA.
+- [x] Armazenar o comprovante gerado e disponibilizar um link seguro para download.
+- [x] Enviar e-mail de confirmação ao respondente com o link do comprovante PDF.
+- [x] Validar o fluxo completo de navegação obrigatória, PDF e confirmação por e-mail.
+- [x] Executar uma simulação ponta a ponta do comprovante armazenado, confirmação por e-mail e link seguro de download.
+- [x] Reexecutar com sucesso a submissão real após validar a chave segura do comprovante PDF.

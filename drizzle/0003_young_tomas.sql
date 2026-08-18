@@ -1,0 +1,1 @@
+ALTER TABLE `diagnosticSubmissions` ADD `receiptStorageKey` varchar(1024);

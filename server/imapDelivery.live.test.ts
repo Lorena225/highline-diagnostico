@@ -53,14 +53,14 @@ function createImapSession() {
 }
 
 describe("entrega na caixa de destino", () => {
-  it.skipIf(!enabled)("localiza no INBOX a simulação de Diagnóstico 360° enviada", async () => {
+  it.skipIf(!enabled)("localiza no INBOX a confirmação do diagnóstico enviada ao respondente", async () => {
     const session = createImapSession();
     try {
       const greeting = await session.readUntil(response => /^\* OK/m.test(response));
       expect(greeting).toMatch(/^\* OK/m);
       await session.command("a1", `LOGIN "${escapeImap(session.user)}" "${escapeImap(session.password)}"`);
       await session.command("a2", "SELECT INBOX");
-      const search = await session.command("a3", 'SEARCH SUBJECT "High Line"');
+      const search = await session.command("a3", 'SEARCH SUBJECT "Confirmação de envio"');
       expect(search).toMatch(/\* SEARCH\s+\d+/);
       await session.command("a4", "LOGOUT");
     } finally {

@@ -4,7 +4,7 @@ import { DIAGNOSTIC_SECTIONS, TOTAL_QUESTIONS, type DiagnosticQuestion } from "@
 import { isSupportedMaterialFile, MATERIAL_ACCEPT_ATTRIBUTE, MAX_MATERIAL_FILE_BYTES } from "@shared/materials";
 import { trpc } from "@/lib/trpc";
 import { parseDiagnosticDraft, serializeDiagnosticDraft } from "@/lib/diagnosticDraft";
-import { isConversationAnswerDetailed, isConversationAnswerPresent, nextConversationPosition, previousConversationPosition } from "@/lib/conversationFlow";
+import { canNavigateToConversationStep, isConversationAnswerDetailed, isConversationAnswerPresent, nextConversationPosition, previousConversationPosition } from "@/lib/conversationFlow";
 import { generateDiagnosticPdf } from "@/lib/diagnosticPdf";
 
 type StructuredAnswer = Record<string, string>;
@@ -133,7 +133,15 @@ export default function Home() {
   const updateAnswer = (id: string, value: AnswerValue) => setAnswers(current => ({ ...current, [id]: value }));
   const updateRespondent = (key: keyof Respondent, value: string) => setRespondent(current => ({ ...current, [key]: value }));
   const saveDraft = () => { window.localStorage.setItem(DRAFT_KEY, serializeDiagnosticDraft({ answers, respondent, accepted, activeStep, questionPage })); setDraftStatus("Rascunho salvo manualmente agora"); };
-  const jumpTo = (index: number) => { setActiveStep(index); setQuestionPage(0); setShowMenu(false); setError(""); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const jumpTo = (index: number) => {
+    if (!canNavigateToConversationStep(activeStep, index)) {
+      setShowMenu(false);
+      setError("Conclua a pergunta atual para avançar. Você pode voltar aos blocos anteriores a qualquer momento.");
+      document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setActiveStep(index); setQuestionPage(0); setShowMenu(false); setError(""); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const previousPage = () => { const previous = previousConversationPosition(activeStep, questionPage); setActiveStep(previous.activeStep); setQuestionPage(previous.questionPage); setError(""); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const currentQuestion = visibleQuestions[0];
   const validateCurrentStep = () => {

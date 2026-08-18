@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { createDiagnosticMaterials, createDiagnosticSubmission, updateDiagnosticEmailStatus } from "../db";
-import { sendDiagnosticEmail } from "../diagnosticEmail";
+import { createDiagnosticMaterials, createDiagnosticSubmission, updateDiagnosticEmailStatus, updateDiagnosticReceipt } from "../db";
+import { sendDiagnosticEmail, sendRespondentConfirmationEmail } from "../diagnosticEmail";
+import { createDiagnosticReceipt } from "../diagnosticReceipt";
 import { publicProcedure, router } from "../_core/trpc";
-import { storagePut } from "../storage";
+import { storageGetSignedUrl, storagePut } from "../storage";
 
 const answerValue = z.union([z.string().max(12000), z.array(z.string().max(1000)).max(20), z.record(z.string(), z.string().max(4000)).refine(value => Object.keys(value).length <= 12)]);
 const materialCategory = z.enum(["digital", "commercial", "institutional"]);
@@ -100,9 +101,19 @@ export const diagnosticRouter = router({
         }
 
         await createDiagnosticMaterials(materialRecords);
-        const email = await sendDiagnosticEmail({ submissionId: submission.id, respondent: input.respondent, answers: input.answers, materials: storedMaterials });
-        await updateDiagnosticEmailStatus(submission.id, email.sent ? "sent" : "pending", email.sent ? null : email.reason ?? "Integração de e-mail ainda não configurada.");
-        return { success: true, emailDelivered: email.sent };
+        const receipt = createDiagnosticReceipt({
+          respondent: input.respondent,
+          answers: input.answers,
+          materials: (input.materials ?? []).map(area => ({ title: area.category, notes: area.notes ?? "", files: area.files.map(file => file.name) })),
+        });
+        const receiptSaved = await storagePut(`diagnosticos/high-line/${submission.id}/comprovante-diagnostico.pdf`, receipt, "application/pdf");
+        await updateDiagnosticReceipt(submission.id, receiptSaved.key);
+        const receiptUrl = await storageGetSignedUrl(receiptSaved.key);
+        const agencyEmail = await sendDiagnosticEmail({ submissionId: submission.id, respondent: input.respondent, answers: input.answers, materials: storedMaterials });
+        const confirmation = agencyEmail.sent ? await sendRespondentConfirmationEmail({ submissionId: submission.id, respondent: input.respondent, receiptUrl }) : { sent: false, reason: agencyEmail.reason };
+        const allDelivered = agencyEmail.sent && confirmation.sent;
+        await updateDiagnosticEmailStatus(submission.id, allDelivered ? "sent" : "pending", allDelivered ? null : confirmation.reason ?? agencyEmail.reason ?? "A confirmação ao respondente não foi entregue.");
+        return { success: true, emailDelivered: allDelivered, receiptUrl };
       } catch (error) {
         await updateDiagnosticEmailStatus(submission.id, "failed", error instanceof Error ? error.message : "Falha inesperada no envio de e-mail.");
         return { success: true, emailDelivered: false };

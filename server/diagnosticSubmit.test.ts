@@ -4,18 +4,24 @@ const mocks = vi.hoisted(() => ({
   createSubmission: vi.fn(),
   createMaterials: vi.fn(),
   updateEmailStatus: vi.fn(),
+  updateReceipt: vi.fn(),
   sendEmail: vi.fn(),
+  sendConfirmation: vi.fn(),
   storeMaterial: vi.fn(),
+  getReceiptLink: vi.fn(),
+  createReceipt: vi.fn(),
 }));
 
 vi.mock("./db", () => ({
   createDiagnosticSubmission: mocks.createSubmission,
   createDiagnosticMaterials: mocks.createMaterials,
   updateDiagnosticEmailStatus: mocks.updateEmailStatus,
+  updateDiagnosticReceipt: mocks.updateReceipt,
 }));
 
-vi.mock("./diagnosticEmail", () => ({ sendDiagnosticEmail: mocks.sendEmail }));
-vi.mock("./storage", () => ({ storagePut: mocks.storeMaterial }));
+vi.mock("./diagnosticEmail", () => ({ sendDiagnosticEmail: mocks.sendEmail, sendRespondentConfirmationEmail: mocks.sendConfirmation }));
+vi.mock("./diagnosticReceipt", () => ({ createDiagnosticReceipt: mocks.createReceipt }));
+vi.mock("./storage", () => ({ storagePut: mocks.storeMaterial, storageGetSignedUrl: mocks.getReceiptLink }));
 
 import { diagnosticRouter } from "./routers/diagnostic";
 
@@ -23,6 +29,10 @@ describe("diagnostic.submit", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.createSubmission.mockResolvedValue({ id: 77 });
+    mocks.createReceipt.mockReturnValue(Buffer.from("pdf"));
+    mocks.storeMaterial.mockResolvedValue({ key: "diagnosticos/high-line/comprovante.pdf", url: "/manus-storage/diagnosticos/high-line/comprovante.pdf" });
+    mocks.getReceiptLink.mockResolvedValue("https://download.exemplo.com/comprovante.pdf");
+    mocks.sendConfirmation.mockResolvedValue({ sent: true });
   });
 
   it("persiste as respostas e marca o e-mail como enviado", async () => {
@@ -41,8 +51,11 @@ describe("diagnostic.submit", () => {
       answers: expect.objectContaining({ pitch_30s: "Uma escola que une acolhimento e excelência." }),
     }));
     expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77 }));
+    expect(mocks.updateReceipt).toHaveBeenCalledWith(77, "diagnosticos/high-line/comprovante.pdf");
+    expect(mocks.storeMaterial).toHaveBeenCalledWith(expect.stringContaining("comprovante-diagnostico.pdf"), expect.any(Buffer), "application/pdf");
+    expect(mocks.sendConfirmation).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77, receiptUrl: "https://download.exemplo.com/comprovante.pdf" }));
     expect(mocks.updateEmailStatus).toHaveBeenCalledWith(77, "sent", null);
-    expect(result).toEqual({ success: true, emailDelivered: true });
+    expect(result).toEqual({ success: true, emailDelivered: true, receiptUrl: "https://download.exemplo.com/comprovante.pdf" });
   });
 
   it("mantém o envio registrado como pendente quando o provedor está indisponível", async () => {
@@ -55,7 +68,7 @@ describe("diagnostic.submit", () => {
     });
 
     expect(mocks.updateEmailStatus).toHaveBeenCalledWith(77, "pending", "Integração de e-mail ainda não configurada.");
-    expect(result).toEqual({ success: true, emailDelivered: false });
+    expect(result).toEqual({ success: true, emailDelivered: false, receiptUrl: "https://download.exemplo.com/comprovante.pdf" });
   });
 
   it("persiste uma observação opcional de material e a inclui no e-mail", async () => {

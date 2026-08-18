@@ -24,3 +24,7 @@ export function previousConversationPosition(activeStep: number, questionPage: n
   if (questionPage > 0) return { activeStep, questionPage: questionPage - 1 };
   return { activeStep: Math.max(0, activeStep - 1), questionPage: 0 };
 }
+
+export function canNavigateToConversationStep(activeStep: number, targetStep: number) {
+  return targetStep <= activeStep;
+}

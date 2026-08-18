@@ -33,7 +33,7 @@ describe("diagnóstico ponta a ponta", () => {
       answers: buildSampleAnswers(),
     });
 
-    expect(result).toEqual({ success: true, emailDelivered: true });
+    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringContaining("http") });
 
     const db = await getDb();
     expect(db).not.toBeNull();
@@ -45,6 +45,7 @@ describe("diagnóstico ponta a ponta", () => {
       respondentEmail: "diagnostico@virtruvia.com.br",
       emailStatus: "sent",
       emailError: null,
+      receiptStorageKey: expect.stringContaining("comprovante-diagnostico"),
     });
   }, 30_000);
 });
