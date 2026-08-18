@@ -106,4 +106,7 @@
 - [x] Criar e validar uma habilidade reutilizável para estruturar, publicar e validar diagnósticos estratégicos VirtruvIA.
 - [x] Refinar a animação de carregamento no botão de envio do diagnóstico.
 - [x] Adicionar o favicon oficial da VirtruvIA à aba do navegador.
-- [ ] Sincronizar as últimas alterações de habilidade, carregamento e favicon no domínio publicado.
+- [x] Sincronizar a animação de carregamento e o favicon no domínio publicado; a habilidade reutilizável permanece como artefato externo instalável.
+- [x] Validar no domínio publicado o favicon oficial no documento e o estado visual de carregamento do botão de envio.
+- [x] Preparar a habilidade reutilizável como pacote instalável independente do site.
+- [x] Entregar a habilidade reutilizável como pacote instalável independente do site.
