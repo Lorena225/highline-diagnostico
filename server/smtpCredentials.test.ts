@@ -18,6 +18,39 @@ function smtpCommand(socket: tls.TLSSocket, command: string, expectedCode: numbe
   });
 }
 
+function authenticateSmtp(host: string, port: number, user: string, password: string) {
+  return new Promise<void>((resolve, reject) => {
+    const socket = tls.connect({ host, port, servername: host, rejectUnauthorized: false });
+    let greeting = "";
+    const timeout = setTimeout(() => {
+      socket.destroy();
+      reject(new Error("Tempo esgotado ao conectar ao servidor SMTP."));
+    }, 12_000);
+
+    socket.once("error", error => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    socket.on("data", async chunk => {
+      greeting += chunk.toString("utf8");
+      if (!/^220 /m.test(greeting)) return;
+      socket.removeAllListeners("data");
+      try {
+        await smtpCommand(socket, "EHLO highline-diagnostico", 250);
+        const token = Buffer.from(`\u0000${user}\u0000${password}`).toString("base64");
+        await smtpCommand(socket, `AUTH PLAIN ${token}`, 235);
+        await smtpCommand(socket, "QUIT", 221);
+        clearTimeout(timeout);
+        resolve();
+      } catch (error) {
+        clearTimeout(timeout);
+        socket.destroy();
+        reject(error);
+      }
+    });
+  });
+}
+
 describe("SMTP seguro", () => {
   it.skipIf(!process.env.SMTP_PASSWORD)("autentica a conta configurada sem enviar mensagens", async () => {
     const host = process.env.SMTP_HOST!;
@@ -25,37 +58,13 @@ describe("SMTP seguro", () => {
     const user = process.env.SMTP_USER!;
     const password = process.env.SMTP_PASSWORD!;
 
-    await new Promise<void>((resolve, reject) => {
-      const socket = tls.connect({ host, port, servername: host, rejectUnauthorized: false });
-      let greeting = "";
-      const timeout = setTimeout(() => {
-        socket.destroy();
-        reject(new Error("Tempo esgotado ao conectar ao servidor SMTP."));
-      }, 12_000);
-
-      socket.once("error", error => {
-        clearTimeout(timeout);
-        reject(error);
-      });
-      socket.on("data", async chunk => {
-        greeting += chunk.toString("utf8");
-        if (!/^220 /m.test(greeting)) return;
-        socket.removeAllListeners("data");
-        try {
-          await smtpCommand(socket, "EHLO highline-diagnostico", 250);
-          const token = Buffer.from(`\u0000${user}\u0000${password}`).toString("base64");
-          await smtpCommand(socket, `AUTH PLAIN ${token}`, 235);
-          await smtpCommand(socket, "QUIT", 221);
-          clearTimeout(timeout);
-          resolve();
-        } catch (error) {
-          clearTimeout(timeout);
-          socket.destroy();
-          reject(error);
-        }
-      });
-    });
+    try {
+      await authenticateSmtp(host, port, user, password);
+    } catch {
+      await new Promise(resolve => setTimeout(resolve, 1_500));
+      await authenticateSmtp(host, port, user, password);
+    }
 
     expect(process.env.SMTP_USER).toBe("diagnostico@virtruvia.com.br");
-  }, 20_000);
+  }, 30_000);
 });

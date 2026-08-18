@@ -19,3 +19,5 @@
 - [x] Validar a experiência desktop e móvel, além de verificar erros de compilação.
 - [x] Substituir a estrutura inicial pelo questionário final editado, incluindo os blocos, instruções e solicitações de materiais complementares.
 - [x] Criar repositório privado no GitHub e enviar a versão final validada do projeto.
+- [x] Alterar o destinatário automático dos diagnósticos para diagnostico@virtruvia.com.br.
+- [x] Executar uma simulação ponta a ponta com respostas fictícias, persistência no banco e entrega real de e-mail.

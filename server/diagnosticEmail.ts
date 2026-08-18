@@ -8,7 +8,7 @@ export type DiagnosticEmailPayload = {
   answers: Record<string, string | string[]>;
 };
 
-const DESTINATION = "agenciavirtruvia@gmail.com";
+const DESTINATION = "diagnostico@virtruvia.com.br";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'\"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character);
