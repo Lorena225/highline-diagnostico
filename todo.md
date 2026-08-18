@@ -24,3 +24,6 @@
 - [x] Adicionar uma animação de carregamento acessível e contextual durante o envio do diagnóstico.
 - [x] Reforçar a tela de sucesso após o envio com feedback visual e mensagem de confirmação clara.
 - [x] Respeitar a preferência de redução de movimento nos novos estados de carregamento e sucesso.
+- [x] Atualizar o título, a descrição e o texto introdutório com a nova narrativa estratégica fornecida.
+- [x] Inserir integralmente o Bloco 1 de contexto, estrutura e oferta educacional com todas as perguntas fornecidas.
+- [x] Atualizar a contagem, a navegação e o progresso do diagnóstico para refletir o novo bloco.

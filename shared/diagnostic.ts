@@ -24,14 +24,14 @@ export const DIAGNOSTIC_SECTIONS: DiagnosticSection[] = [
     id: "contexto-oferta",
     title: "Contexto, estrutura e oferta educacional",
     rationale:
-      "Antes de propor ações de marketing, precisamos entender o negócio como ele funciona: segmentos, capacidade, vagas, localização, ticket, serviços e prioridades reais de matrícula.",
+      "Antes de propor ações de marketing, precisamos entender o negócio como ele funciona: segmentos atendidos, capacidade, vagas, localização, ticket, serviços e prioridades reais de matrícula. Marketing eficiente não gera demanda para o lugar errado; ele direciona a demanda certa para as turmas, períodos e produtos educacionais que a escola precisa desenvolver.",
     questions: [
       text("pitch_30s", "Em poucas frases, como você apresentaria a High Line School para uma família que nunca ouviu falar da escola? Escreva o pitch de 30 segundos."),
       {
         id: "segmentos_atendidos",
-        label: "Quais segmentos e serviços a escola atende atualmente?",
+        label: "Quais segmentos a escola atende atualmente? Informe, se aplicável:",
         type: "checkbox",
-        options: ["Berçário", "Educação Infantil", "Ensino Fundamental — Anos Iniciais", "Ensino Fundamental — Anos Finais", "Turno integral", "Contraturno", "Atividades complementares", "Outro"],
+        options: ["Berçário", "Educação Infantil", "Ensino Fundamental — Anos Iniciais", "Ensino Fundamental — Anos Finais", "Turno integral, contraturno, atividades complementares e outros serviços"],
       },
       text("unidades_enderecos", "Em quais endereços ou unidades a escola opera hoje? Informe bairro, principais vias de acesso e eventuais planos de expansão física."),
       text("capacidade_maxima", "Qual é a capacidade máxima de alunos por unidade, segmento, série, turma e turno?"),
