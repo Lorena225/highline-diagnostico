@@ -321,7 +321,9 @@ export function AIChatBox({
           type="submit"
           size="icon"
           disabled={!input.trim() || isLoading}
-          className="shrink-0 h-[38px] w-[38px]"
+          aria-label={isLoading ? "Enviando mensagem" : "Enviar mensagem"}
+          aria-busy={isLoading}
+          className={cn("form-submit-button shrink-0 h-[38px] w-[38px]", isLoading && "form-submit-button--loading")}
         >
           {isLoading ? (
             <Loader2 className="size-4 animate-spin" />

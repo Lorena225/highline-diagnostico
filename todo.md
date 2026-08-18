@@ -110,3 +110,4 @@
 - [x] Validar no domínio publicado o favicon oficial no documento e o estado visual de carregamento do botão de envio.
 - [x] Preparar a habilidade reutilizável como pacote instalável independente do site.
 - [x] Entregar a habilidade reutilizável como pacote instalável independente do site.
+- [x] Mapear todos os formulários e aplicar a animação suave de carregamento em cada envio assíncrono.
