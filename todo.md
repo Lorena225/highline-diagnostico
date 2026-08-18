@@ -77,3 +77,7 @@
 - [x] Preparar a publicação no domínio diagnostico-virtruvia e orientar a implantação via repositório GitHub e integração Vercel disponível.
 - [x] Criar o projeto Vercel diagnostico-virtruvia vinculado ao repositório Lorena225/highline-diagnostico, sem disparar uma publicação automática.
 - [ ] Acionar manualmente a primeira publicação de produção na Vercel após a sincronização final do repositório.
+- [x] Configurar saída estática e função de API compatíveis com Vercel para servir o frontend e as rotas do diagnóstico.
+- [ ] Configurar com segurança as variáveis de banco, SMTP e armazenamento no projeto Vercel antes de liberar os envios em produção.
+- [ ] Publicar a adaptação Vercel e confirmar uma implantação de produção pronta.
+- [ ] Confirmar que a raiz publicada retorna o frontend HTML e que a função de API responde na Vercel.
