@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { diagnosticMaterials, diagnosticSubmissions, InsertDiagnosticMaterial, InsertDiagnosticSubmission, InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -108,10 +108,19 @@ export async function updateDiagnosticEmailStatus(
   await db.update(diagnosticSubmissions).set({ emailStatus: status, emailError: error }).where(eq(diagnosticSubmissions.id, id));
 }
 
-export async function updateDiagnosticReceipt(id: number, receiptStorageKey: string) {
+export async function updateDiagnosticReceipt(id: number, receipt: { receiptStorageKey: string; receiptAccessToken: string; receiptExpiresAt: Date }) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível.");
-  await db.update(diagnosticSubmissions).set({ receiptStorageKey }).where(eq(diagnosticSubmissions.id, id));
+  await db.update(diagnosticSubmissions).set(receipt).where(eq(diagnosticSubmissions.id, id));
+}
+
+export async function getActiveDiagnosticReceiptByToken(token: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+  const result = await db.select().from(diagnosticSubmissions).where(and(eq(diagnosticSubmissions.receiptAccessToken, token))).limit(1);
+  const receipt = result[0];
+  if (!receipt?.receiptStorageKey || !receipt.receiptExpiresAt || receipt.receiptExpiresAt.getTime() < Date.now()) return undefined;
+  return receipt;
 }
 
 export async function createDiagnosticMaterials(materials: InsertDiagnosticMaterial[]) {

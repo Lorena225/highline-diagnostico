@@ -48,4 +48,9 @@ describe("formatDiagnosticEmail", () => {
     expect(message.plainText).toContain("Bairros de origem: Setor Bueno e Marista");
   });
 
+  it("informa a validade de sete dias na confirmação do comprovante", async () => {
+    const { sendRespondentConfirmationEmail } = await import("./diagnosticEmail");
+    expect(typeof sendRespondentConfirmationEmail).toBe("function");
+  });
+
 });

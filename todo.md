@@ -71,3 +71,9 @@
 - [x] Validar o fluxo completo de navegação obrigatória, PDF e confirmação por e-mail.
 - [x] Executar uma simulação ponta a ponta do comprovante armazenado, confirmação por e-mail e link seguro de download.
 - [x] Reexecutar com sucesso a submissão real após validar a chave segura do comprovante PDF.
+- [x] Configurar validade de 7 dias para o link seguro do comprovante PDF.
+- [x] Informar no e-mail de confirmação que o link do PDF expira em 7 dias.
+- [x] Executar a simulação final e validar a entrega do e-mail, o formato e o PDF.
+- [x] Preparar a publicação no domínio diagnostico-virtruvia e orientar a implantação via repositório GitHub e integração Vercel disponível.
+- [x] Criar o projeto Vercel diagnostico-virtruvia vinculado ao repositório Lorena225/highline-diagnostico, sem disparar uma publicação automática.
+- [ ] Acionar manualmente a primeira publicação de produção na Vercel após a sincronização final do repositório.

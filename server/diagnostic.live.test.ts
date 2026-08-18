@@ -33,7 +33,11 @@ describe("diagnóstico ponta a ponta", () => {
       answers: buildSampleAnswers(),
     });
 
-    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringContaining("http") });
+    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringContaining("/api/receipt/") });
+    const receiptPath = new URL(result.receiptUrl).pathname;
+    const receiptResponse = await fetch(`http://localhost:3000${receiptPath}`, { redirect: "manual" });
+    expect(receiptResponse.status).toBe(302);
+    expect(receiptResponse.headers.get("location")).toContain("http");
 
     const db = await getDb();
     expect(db).not.toBeNull();
@@ -46,6 +50,8 @@ describe("diagnóstico ponta a ponta", () => {
       emailStatus: "sent",
       emailError: null,
       receiptStorageKey: expect.stringContaining("comprovante-diagnostico"),
+      receiptAccessToken: expect.stringMatching(/^[a-f0-9]{64}$/),
+      receiptExpiresAt: expect.any(Date),
     });
   }, 30_000);
 });

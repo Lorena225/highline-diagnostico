@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { randomBytes } from "node:crypto";
 import { createDiagnosticMaterials, createDiagnosticSubmission, updateDiagnosticEmailStatus, updateDiagnosticReceipt } from "../db";
 import { sendDiagnosticEmail, sendRespondentConfirmationEmail } from "../diagnosticEmail";
 import { createDiagnosticReceipt } from "../diagnosticReceipt";
@@ -51,7 +52,7 @@ export const diagnosticRouter = router({
       answers: z.record(z.string(), answerValue),
       materials: z.array(materialArea).max(3).optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const submission = await createDiagnosticSubmission({
         respondentName: input.respondent.name,
         respondentRole: input.respondent.role || null,
@@ -107,8 +108,15 @@ export const diagnosticRouter = router({
           materials: (input.materials ?? []).map(area => ({ title: area.category, notes: area.notes ?? "", files: area.files.map(file => file.name) })),
         });
         const receiptSaved = await storagePut(`diagnosticos/high-line/${submission.id}/comprovante-diagnostico.pdf`, receipt, "application/pdf");
-        await updateDiagnosticReceipt(submission.id, receiptSaved.key);
-        const receiptUrl = await storageGetSignedUrl(receiptSaved.key);
+        const receiptAccessToken = randomBytes(32).toString("hex");
+        const receiptExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await updateDiagnosticReceipt(submission.id, { receiptStorageKey: receiptSaved.key, receiptAccessToken, receiptExpiresAt });
+        const request = ctx.req as { protocol?: string; headers?: Record<string, string | string[] | undefined>; get?: (name: string) => string | undefined } | undefined;
+        const host = request?.get?.("host") ?? request?.headers?.host;
+        const protocolHeader = request?.headers?.["x-forwarded-proto"];
+        const protocol = typeof protocolHeader === "string" ? protocolHeader.split(",")[0] : request?.protocol ?? "https";
+        const baseUrl = host ? `${protocol}://${host}` : "https://diagnostico-virtruvia.vercel.app";
+        const receiptUrl = `${baseUrl}/api/receipt/${receiptAccessToken}`;
         const agencyEmail = await sendDiagnosticEmail({ submissionId: submission.id, respondent: input.respondent, answers: input.answers, materials: storedMaterials });
         const confirmation = agencyEmail.sent ? await sendRespondentConfirmationEmail({ submissionId: submission.id, respondent: input.respondent, receiptUrl }) : { sent: false, reason: agencyEmail.reason };
         const allDelivered = agencyEmail.sent && confirmation.sent;

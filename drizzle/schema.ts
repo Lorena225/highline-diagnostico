@@ -35,6 +35,8 @@ export const diagnosticSubmissions = mysqlTable("diagnosticSubmissions", {
   emailStatus: mysqlEnum("emailStatus", ["pending", "sent", "failed"]).default("pending").notNull(),
   emailError: text("emailError"),
   receiptStorageKey: varchar("receiptStorageKey", { length: 1024 }),
+  receiptAccessToken: varchar("receiptAccessToken", { length: 128 }),
+  receiptExpiresAt: timestamp("receiptExpiresAt"),
   submittedAt: timestamp("submittedAt").defaultNow().notNull(),
 });
 

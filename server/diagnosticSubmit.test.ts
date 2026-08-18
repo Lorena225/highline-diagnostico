@@ -31,7 +31,6 @@ describe("diagnostic.submit", () => {
     mocks.createSubmission.mockResolvedValue({ id: 77 });
     mocks.createReceipt.mockReturnValue(Buffer.from("pdf"));
     mocks.storeMaterial.mockResolvedValue({ key: "diagnosticos/high-line/comprovante.pdf", url: "/manus-storage/diagnosticos/high-line/comprovante.pdf" });
-    mocks.getReceiptLink.mockResolvedValue("https://download.exemplo.com/comprovante.pdf");
     mocks.sendConfirmation.mockResolvedValue({ sent: true });
   });
 
@@ -51,11 +50,15 @@ describe("diagnostic.submit", () => {
       answers: expect.objectContaining({ pitch_30s: "Uma escola que une acolhimento e excelência." }),
     }));
     expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77 }));
-    expect(mocks.updateReceipt).toHaveBeenCalledWith(77, "diagnosticos/high-line/comprovante.pdf");
+    expect(mocks.updateReceipt).toHaveBeenCalledWith(77, expect.objectContaining({
+      receiptStorageKey: "diagnosticos/high-line/comprovante.pdf",
+      receiptAccessToken: expect.stringMatching(/^[a-f0-9]{64}$/),
+      receiptExpiresAt: expect.any(Date),
+    }));
     expect(mocks.storeMaterial).toHaveBeenCalledWith(expect.stringContaining("comprovante-diagnostico.pdf"), expect.any(Buffer), "application/pdf");
-    expect(mocks.sendConfirmation).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77, receiptUrl: "https://download.exemplo.com/comprovante.pdf" }));
+    expect(mocks.sendConfirmation).toHaveBeenCalledWith(expect.objectContaining({ submissionId: 77, receiptUrl: expect.stringContaining("/api/receipt/") }));
     expect(mocks.updateEmailStatus).toHaveBeenCalledWith(77, "sent", null);
-    expect(result).toEqual({ success: true, emailDelivered: true, receiptUrl: "https://download.exemplo.com/comprovante.pdf" });
+    expect(result).toMatchObject({ success: true, emailDelivered: true, receiptUrl: expect.stringContaining("/api/receipt/") });
   });
 
   it("mantém o envio registrado como pendente quando o provedor está indisponível", async () => {
@@ -68,7 +71,7 @@ describe("diagnostic.submit", () => {
     });
 
     expect(mocks.updateEmailStatus).toHaveBeenCalledWith(77, "pending", "Integração de e-mail ainda não configurada.");
-    expect(result).toEqual({ success: true, emailDelivered: false, receiptUrl: "https://download.exemplo.com/comprovante.pdf" });
+    expect(result).toMatchObject({ success: true, emailDelivered: false, receiptUrl: expect.stringContaining("/api/receipt/") });
   });
 
   it("persiste uma observação opcional de material e a inclui no e-mail", async () => {
