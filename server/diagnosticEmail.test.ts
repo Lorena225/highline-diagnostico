@@ -37,4 +37,15 @@ describe("formatDiagnosticEmail", () => {
     expect(message.plainText).toContain("MATERIAIS DE APOIO PARA APROFUNDAMENTO");
   });
 
+  it("formata respostas estruturadas com seus campos preenchidos", () => {
+    const message = formatDiagnosticEmail({
+      submissionId: 44,
+      respondent: { name: "Ana Gestão", email: "ana@highline.edu.br" },
+      answers: { perfil_predominante: { "Bairros de origem": "Setor Bueno e Marista" } },
+    });
+
+    expect(message.html).toContain("Bairros de origem: Setor Bueno e Marista");
+    expect(message.plainText).toContain("Bairros de origem: Setor Bueno e Marista");
+  });
+
 });

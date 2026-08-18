@@ -31,7 +31,7 @@ export const diagnosticSubmissions = mysqlTable("diagnosticSubmissions", {
   respondentRole: varchar("respondentRole", { length: 191 }),
   respondentEmail: varchar("respondentEmail", { length: 320 }).notNull(),
   respondentPhone: varchar("respondentPhone", { length: 64 }),
-  answers: json("answers").$type<Record<string, string | string[]>>().notNull(),
+  answers: json("answers").$type<Record<string, string | string[] | Record<string, string>>>().notNull(),
   emailStatus: mysqlEnum("emailStatus", ["pending", "sent", "failed"]).default("pending").notNull(),
   emailError: text("emailError"),
   submittedAt: timestamp("submittedAt").defaultNow().notNull(),

@@ -4,7 +4,7 @@ import { sendDiagnosticEmail } from "../diagnosticEmail";
 import { publicProcedure, router } from "../_core/trpc";
 import { storagePut } from "../storage";
 
-const answerValue = z.union([z.string().max(12000), z.array(z.string().max(1000)).max(20)]);
+const answerValue = z.union([z.string().max(12000), z.array(z.string().max(1000)).max(20), z.record(z.string(), z.string().max(4000)).refine(value => Object.keys(value).length <= 12)]);
 const materialCategory = z.enum(["digital", "commercial", "institutional"]);
 const materialFile = z.object({
   name: z.string().trim().min(1).max(180),

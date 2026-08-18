@@ -36,3 +36,8 @@
 - [x] Exibir a transição final e o escopo estratégico da análise antes do encerramento.
 - [x] Validar visualmente a etapa final do formulário em desktop e mobile, incluindo transição, materiais e encerramento.
 - [x] Exercitar a seleção de arquivo permitido, a rejeição de formato inválido e o envio com materiais opcionais por meio da validação compartilhada e dos testes de submissão.
+- [x] Reduzir e reorganizar o diagnóstico para aproximadamente 50 a 55 perguntas estratégicas, preservando a etapa 00 sem alterações.
+- [x] Substituir os blocos atuais pelos oito blocos finais de marca, posicionamento, demanda, experiência, marketing e jornada comercial.
+- [x] Incluir orientações breves, campos narrativos e proteções de privacidade conforme a versão final fornecida.
+- [x] Manter somente a área opcional final de materiais institucionais, autorizados ou anonimizados.
+- [x] Ajustar a navegação, o progresso e os textos de apoio para tornar o preenchimento mais claro e menos burocrático.

@@ -5,7 +5,7 @@ import { ENV } from "./_core/env";
 export type DiagnosticEmailPayload = {
   submissionId: number;
   respondent: { name: string; role?: string; email: string; phone?: string };
-  answers: Record<string, string | string[]>;
+  answers: Record<string, string | string[] | Record<string, string>>;
   materials?: Array<{ category: string; notes?: string; fileName?: string; fileUrl?: string }>;
 };
 
@@ -15,9 +15,11 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>'\"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character);
 }
 
-function answerText(value: string | string[] | undefined) {
+function answerText(value: string | string[] | Record<string, string> | undefined) {
   if (!value || (Array.isArray(value) && value.length === 0)) return "Não respondido";
-  return Array.isArray(value) ? value.join(", ") : value;
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return Object.entries(value).filter(([, answer]) => answer.trim()).map(([field, answer]) => `${field}: ${answer}`).join("\n") || "Não respondido";
+  return value;
 }
 
 const materialTitles: Record<string, string> = {
