@@ -21,3 +21,6 @@
 - [x] Criar repositório privado no GitHub e enviar a versão final validada do projeto.
 - [x] Alterar o destinatário automático dos diagnósticos para diagnostico@virtruvia.com.br.
 - [x] Executar uma simulação ponta a ponta com respostas fictícias, persistência no banco e entrega real de e-mail.
+- [x] Adicionar uma animação de carregamento acessível e contextual durante o envio do diagnóstico.
+- [x] Reforçar a tela de sucesso após o envio com feedback visual e mensagem de confirmação clara.
+- [x] Respeitar a preferência de redução de movimento nos novos estados de carregamento e sucesso.
