@@ -183,3 +183,159 @@ export async function createDiagnosticMaterials(materials: InsertDiagnosticMater
 
   await db.insert(diagnosticMaterials).values(materials);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Resiliência: rascunhos no servidor, consulta administrativa e verificação de
+// saúde. Todas as funções abaixo exigem Supabase configurado — o objetivo é
+// justamente falhar cedo e de forma visível quando o banco não estiver de pé.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function requireSupabase() {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Banco de dados indisponível.");
+  return supabase;
+}
+
+export type DiagnosticDraftInput = {
+  respondentEmail: string;
+  respondentName?: string | null;
+  respondentRole?: string | null;
+  respondentPhone?: string | null;
+  answers: Record<string, unknown>;
+  activeStep: number;
+  questionPage: number;
+};
+
+/** Grava (ou atualiza) o rascunho do respondente no servidor. */
+export async function saveDiagnosticDraft(draft: DiagnosticDraftInput) {
+  const supabase = requireSupabase();
+  const answeredCount = Object.values(draft.answers ?? {}).filter(value => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (value && typeof value === "object") return Object.values(value as Record<string, string>).some(item => String(item ?? "").trim().length > 0);
+    return String(value ?? "").trim().length > 0;
+  }).length;
+
+  const { data, error } = await supabase.from("diagnostic_drafts").upsert({
+    respondent_email: draft.respondentEmail.trim().toLowerCase(),
+    respondent_name: draft.respondentName ?? null,
+    respondent_role: draft.respondentRole ?? null,
+    respondent_phone: draft.respondentPhone ?? null,
+    answers: draft.answers,
+    active_step: draft.activeStep,
+    question_page: draft.questionPage,
+    answered_count: answeredCount,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "respondent_email" }).select("id, answered_count").single();
+
+  if (error || !data) throw new Error(`Supabase: ${error?.message ?? "falha ao salvar rascunho"}`);
+  return { id: Number(data.id), answeredCount: Number(data.answered_count) };
+}
+
+/** Recupera o rascunho de um respondente pelo e-mail. */
+export async function getDiagnosticDraftByEmail(email: string) {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("diagnostic_drafts")
+    .select("respondent_email, respondent_name, respondent_role, respondent_phone, answers, active_step, question_page, answered_count, updated_at")
+    .eq("respondent_email", email.trim().toLowerCase())
+    .maybeSingle();
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  if (!data) return undefined;
+  return {
+    respondent: {
+      name: data.respondent_name ?? "",
+      role: data.respondent_role ?? "",
+      email: data.respondent_email,
+      phone: data.respondent_phone ?? "",
+    },
+    answers: (data.answers ?? {}) as Record<string, unknown>,
+    activeStep: Number(data.active_step ?? 0),
+    questionPage: Number(data.question_page ?? 0),
+    answeredCount: Number(data.answered_count ?? 0),
+    updatedAt: new Date(data.updated_at),
+  };
+}
+
+/** Marca o rascunho como concluído após uma submissão bem-sucedida. */
+export async function markDiagnosticDraftSubmitted(email: string) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return;
+  await supabase
+    .from("diagnostic_drafts")
+    .update({ submitted_at: new Date().toISOString() })
+    .eq("respondent_email", email.trim().toLowerCase());
+}
+
+/** Lista rascunhos ainda não enviados — respostas em risco de se perderem. */
+export async function listOpenDiagnosticDrafts() {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("diagnostic_drafts")
+    .select("id, respondent_email, respondent_name, answered_count, active_step, updated_at, submitted_at")
+    .is("submitted_at", null)
+    .order("updated_at", { ascending: false })
+    .limit(200);
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  return data ?? [];
+}
+
+/** Lista submissões para a tela de consulta. */
+export async function listDiagnosticSubmissions(limit = 200) {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("diagnostic_submissions")
+    .select("id, respondent_name, respondent_role, respondent_email, respondent_phone, email_status, email_error, email_attempts, receipt_access_token, receipt_expires_at, submitted_at")
+    .order("submitted_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  return data ?? [];
+}
+
+/** Retorna uma submissão completa, com respostas e materiais. */
+export async function getDiagnosticSubmissionById(id: number) {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase.from("diagnostic_submissions").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  if (!data) return undefined;
+  const { data: materials } = await supabase.from("diagnostic_materials").select("*").eq("submission_id", id);
+  return { submission: data, materials: materials ?? [] };
+}
+
+/** Submissões cuja notificação por e-mail ainda não foi confirmada. */
+export async function listSubmissionsPendingEmail() {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("diagnostic_submissions")
+    .select("id, respondent_name, respondent_email, email_status, email_error, email_attempts, receipt_access_token, submitted_at, answers")
+    .in("email_status", ["pending", "failed"])
+    .order("submitted_at", { ascending: false })
+    .limit(50);
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  return data ?? [];
+}
+
+/** Registra mais uma tentativa de notificação. */
+export async function registerEmailAttempt(id: number, attempts: number) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return;
+  await supabase
+    .from("diagnostic_submissions")
+    .update({ email_attempts: attempts, last_email_attempt_at: new Date().toISOString() })
+    .eq("id", id);
+}
+
+/**
+ * Verifica se o banco está realmente respondendo. Usado pelo portão de saúde
+ * que impede alguém de responder 51 perguntas contra uma base indisponível.
+ */
+export async function checkDiagnosticDatabase(): Promise<{ ok: boolean; reason?: string }> {
+  try {
+    const supabase = getSupabaseAdmin();
+    if (!supabase) return { ok: false, reason: "Credenciais do banco não configuradas." };
+    const { error } = await supabase.from("diagnostic_submissions").select("id", { count: "exact", head: true }).limit(1);
+    if (error) return { ok: false, reason: error.message };
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : "Falha desconhecida no banco." };
+  }
+}

@@ -10,6 +10,11 @@ const mocks = vi.hoisted(() => ({
   storeMaterial: vi.fn(),
   getReceiptLink: vi.fn(),
   createReceipt: vi.fn(),
+  registerEmailAttempt: vi.fn(),
+  markDraftSubmitted: vi.fn(),
+  saveDraft: vi.fn(),
+  getDraft: vi.fn(),
+  checkDatabase: vi.fn(),
 }));
 
 vi.mock("./db", () => ({
@@ -17,6 +22,11 @@ vi.mock("./db", () => ({
   createDiagnosticMaterials: mocks.createMaterials,
   updateDiagnosticEmailStatus: mocks.updateEmailStatus,
   updateDiagnosticReceipt: mocks.updateReceipt,
+  registerEmailAttempt: mocks.registerEmailAttempt,
+  markDiagnosticDraftSubmitted: mocks.markDraftSubmitted,
+  saveDiagnosticDraft: mocks.saveDraft,
+  getDiagnosticDraftByEmail: mocks.getDraft,
+  checkDiagnosticDatabase: mocks.checkDatabase,
 }));
 
 vi.mock("./diagnosticEmail", () => ({ sendDiagnosticEmail: mocks.sendEmail, sendRespondentConfirmationEmail: mocks.sendConfirmation }));

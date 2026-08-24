@@ -5,6 +5,7 @@ import { registerStorageProxy } from "./_core/storageProxy";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import { registerReceiptRoute } from "./receiptRoute";
+import { registerAdminRoutes } from "./adminRoute";
 
 export function createApp() {
   const app = express();
@@ -13,6 +14,7 @@ export function createApp() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerReceiptRoute(app);
+  registerAdminRoutes(app);
   app.use(
     "/api/trpc",
     createExpressMiddleware({
