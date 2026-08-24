@@ -85,6 +85,8 @@ export default function Home() {
   const [showSubmitOverlay, setShowSubmitOverlay] = useState(false);
   const cancelSubmitOverlay = useRef<(() => void) | null>(null);
   const submit = trpc.diagnostic.submit.useMutation();
+  const health = trpc.diagnostic.health.useQuery(undefined, { retry: false, refetchOnWindowFocus: false, staleTime: 60_000 });
+  const saveProgress = trpc.diagnostic.saveProgress.useMutation({ onError: () => undefined });
 
   useEffect(() => {
     if (isPreviewing) return;
@@ -133,7 +135,16 @@ export default function Home() {
   const progress = activeStep < 0 ? 0 : Math.min(100, Math.round(((activeStep + 1) / totalSteps) * 100));
   const questionOffset = (activeStep <= 1 ? 0 : DIAGNOSTIC_SECTIONS.slice(0, activeStep - 1).reduce((total, section) => total + section.questions.length, 0)) + questionPage * QUESTIONS_PER_PAGE;
 
+  const persistProgress = (step: number, page: number) => {
+    if (isPreviewing || !respondent.email.trim() || !respondent.email.includes("@")) return;
+    saveProgress.mutate({ respondent, answers, activeStep: Math.max(0, step), questionPage: Math.max(0, page) });
+  };
+
   const begin = () => {
+    if (health.data && !health.data.ok) {
+      setError("O sistema esta temporariamente em manutencao e nao conseguiria registrar suas respostas agora. Tente novamente em alguns minutos.");
+      return;
+    }
     setActiveStep(0);
     document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -162,7 +173,7 @@ export default function Home() {
     if (!isConversationAnswerDetailed(value, currentQuestion.type === "textarea")) { setError("Esta resposta ainda está curta. Tente trazer mais contexto ou escreva “não sei” se a informação precisar ser levantada."); return false; }
     return true;
   };
-  const nextPage = () => { if (!validateCurrentStep()) return; setError(""); const next = nextConversationPosition(activeStep, questionPage, sectionPageCount); setActiveStep(next.activeStep); setQuestionPage(next.questionPage); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const nextPage = () => { if (!validateCurrentStep()) return; setError(""); const next = nextConversationPosition(activeStep, questionPage, sectionPageCount); setActiveStep(next.activeStep); setQuestionPage(next.questionPage); persistProgress(next.activeStep, next.questionPage); document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const updateMaterialNotes = (category: MaterialCategory, notes: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, notes } : area));
   const removeMaterialFile = (category: MaterialCategory, fileName: string) => setMaterialAreas(current => current.map(area => area.category === category ? { ...area, files: area.files.filter(file => `${file.name}-${file.lastModified}` !== fileName) } : area));
   const addMaterialFiles = (category: MaterialCategory, fileList: FileList | null) => {
@@ -188,12 +199,17 @@ export default function Home() {
       const result = await submit.mutateAsync({ respondent, answers, materials });
       if (!result.emailDelivered) {
         setError("As respostas foram registradas, mas a notificação por e-mail ainda não foi confirmada. Não reenvie este formulário para evitar duplicidade; a equipe VirtruvIA pode verificar o registro salvo.");
+        try { downloadAnswersPdf(); } catch { /* o PDF e um reforco, nunca um bloqueio */ }
         return;
       }
       window.localStorage.removeItem(DRAFT_KEY);
       setComplete(true);
       document.querySelector("#diagnostico")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch { setError("Não foi possível concluir o envio agora. Suas respostas permanecem salvas neste dispositivo; tente novamente em alguns instantes."); }
+    } catch {
+      setError("Não foi possível concluir o envio agora. Suas respostas permanecem salvas neste dispositivo; tente novamente em alguns instantes.");
+      persistProgress(activeStep, questionPage);
+      try { downloadAnswersPdf(); } catch { /* reforco */ }
+    }
     finally {
       cancelSubmitOverlay.current?.();
       cancelSubmitOverlay.current = null;

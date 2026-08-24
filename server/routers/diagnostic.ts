@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { randomBytes } from "node:crypto";
-import { createDiagnosticMaterials, createDiagnosticSubmission, updateDiagnosticEmailStatus, updateDiagnosticReceipt } from "../db";
+import {
+  checkDiagnosticDatabase,
+  createDiagnosticMaterials,
+  createDiagnosticSubmission,
+  getDiagnosticDraftByEmail,
+  markDiagnosticDraftSubmitted,
+  registerEmailAttempt,
+  saveDiagnosticDraft,
+  updateDiagnosticEmailStatus,
+  updateDiagnosticReceipt,
+} from "../db";
 import { sendDiagnosticEmail, sendRespondentConfirmationEmail } from "../diagnosticEmail";
 import { createDiagnosticReceipt } from "../diagnosticReceipt";
 import { publicProcedure, router } from "../_core/trpc";
@@ -42,6 +52,59 @@ function safeFileName(name: string) {
 }
 
 export const diagnosticRouter = router({
+  /**
+   * Portao de saude. O formulario consulta este procedimento antes de liberar o
+   * preenchimento: se o banco nao estiver respondendo, a tela informa
+   * manutencao em vez de deixar alguem responder 51 perguntas no vazio.
+   */
+  health: publicProcedure.query(async () => {
+    const database = await checkDiagnosticDatabase();
+    return {
+      ok: database.ok,
+      database: database.ok,
+      reason: database.ok ? undefined : database.reason,
+      checkedAt: new Date().toISOString(),
+    };
+  }),
+
+  /**
+   * Salvamento progressivo. Chamado a cada bloco concluido, mantem uma segunda
+   * copia das respostas no servidor.
+   */
+  saveProgress: publicProcedure
+    .input(z.object({
+      respondent: z.object({
+        name: z.string().trim().max(191).optional(),
+        role: z.string().trim().max(191).optional(),
+        email: z.string().trim().email().max(320),
+        phone: z.string().trim().max(64).optional(),
+      }),
+      answers: z.record(z.string(), answerValue),
+      activeStep: z.number().int().min(0).max(50),
+      questionPage: z.number().int().min(0).max(50),
+    }))
+    .mutation(async ({ input }) => {
+      const saved = await saveDiagnosticDraft({
+        respondentEmail: input.respondent.email,
+        respondentName: input.respondent.name ?? null,
+        respondentRole: input.respondent.role ?? null,
+        respondentPhone: input.respondent.phone ?? null,
+        answers: input.answers,
+        activeStep: input.activeStep,
+        questionPage: input.questionPage,
+      });
+      return { saved: true, answeredCount: saved.answeredCount, savedAt: new Date().toISOString() };
+    }),
+
+  /** Recupera um rascunho salvo no servidor a partir do e-mail informado. */
+  recoverDraft: publicProcedure
+    .input(z.object({ email: z.string().trim().email().max(320) }))
+    .query(async ({ input }) => {
+      const draft = await getDiagnosticDraftByEmail(input.email);
+      if (!draft) return { found: false as const };
+      return { found: true as const, ...draft };
+    }),
+
   submit: publicProcedure
     .input(z.object({
       respondent: z.object({
@@ -115,14 +178,17 @@ export const diagnosticRouter = router({
         await updateDiagnosticReceipt(submission.id, { receiptStorageKey: receiptSaved.key, receiptAccessToken, receiptExpiresAt });
         const baseUrl = ENV.publicAppUrl.replace(/\/+$/, "");
         const receiptUrl = `${baseUrl}/api/receipt/${receiptAccessToken}`;
+        await registerEmailAttempt(submission.id, 1);
         const agencyEmail = await sendDiagnosticEmail({ submissionId: submission.id, respondent: input.respondent, answers: input.answers, materials: storedMaterials });
         const confirmation = agencyEmail.sent ? await sendRespondentConfirmationEmail({ submissionId: submission.id, respondent: input.respondent, receiptUrl }) : { sent: false, reason: agencyEmail.reason };
         const allDelivered = agencyEmail.sent && confirmation.sent;
         await updateDiagnosticEmailStatus(submission.id, allDelivered ? "sent" : "pending", allDelivered ? null : confirmation.reason ?? agencyEmail.reason ?? "A confirmação ao respondente não foi entregue.");
-        return { success: true, emailDelivered: allDelivered, receiptUrl };
+        await markDiagnosticDraftSubmitted(input.respondent.email);
+        return { success: true, submissionId: submission.id, emailDelivered: allDelivered, receiptUrl };
       } catch (error) {
         await updateDiagnosticEmailStatus(submission.id, "failed", error instanceof Error ? error.message : "Falha inesperada no envio de e-mail.");
-        return { success: true, emailDelivered: false };
+        await markDiagnosticDraftSubmitted(input.respondent.email);
+        return { success: true, submissionId: submission.id, emailDelivered: false };
       }
     }),
 });

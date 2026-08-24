@@ -12,6 +12,7 @@ export const ENV = {
   smtpUser: process.env.SMTP_USER ?? "",
   smtpPassword: process.env.SMTP_PASSWORD ?? "",
   publicAppUrl: process.env.PUBLIC_APP_URL ?? "https://diagnostico-virtruvia.vercel.app",
+  adminAccessKey: process.env.ADMIN_ACCESS_KEY ?? "",
   supabaseUrl: process.env.SUPABASE_URL ?? "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
 };
